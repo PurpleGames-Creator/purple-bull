@@ -24,9 +24,16 @@ async function getSupabaseClientWithRetry(maxWaitMs = 5000, intervalMs = 100) {
   return null;
 }
 
+/**
+ * @param {{ nickname: string, score: number }} params
+ * @returns {Promise<{ data: any, error: any } | { error: null, skipped: true }>}
+ */
 async function submitScore({ nickname, score }) {
   const client = await getSupabaseClientWithRetry();
-  if (!client) return { error: null, skipped: true };
+  if (!client) {
+    console.warn("Supabaseクライアントが未初期化のため、スコア送信をスキップします。");
+    return { error: null, skipped: true };
+  }
 
   const { data, error } = await client
     .from(RANKING_TABLE)
@@ -37,9 +44,16 @@ async function submitScore({ nickname, score }) {
   return { data, error };
 }
 
+/**
+ * @param {"today" | "week" | "all"} range
+ * @returns {Promise<{ data: any[], error: any, skipped?: boolean }>}
+ */
 async function fetchRanking(range) {
   const client = await getSupabaseClientWithRetry();
-  if (!client) return { data: [], error: null, skipped: true };
+  if (!client) {
+    console.warn("Supabaseクライアントが未初期化のため、ランキング取得をスキップします。");
+    return { data: [], error: null, skipped: true };
+  }
 
   const now = new Date();
   let fromDate = null;
