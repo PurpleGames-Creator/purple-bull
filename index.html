@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Purple Bull</title>
+  <meta name="apple-mobile-web-app-title" content="🐂Purple Bull🐂" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="manifest" href="./manifest.json" />
+</head>
+<body>
+  <div id="app">
+    <div id="error-banner" aria-live="polite"></div>
+
+    <!-- ホーム画面 -->
+    <main id="screen-home" class="screen screen--active">
+      <header class="header">
+        <a class="home-logo-link" href="https://purple-park.vercel.app/" aria-label="Purple Park へ移動">
+          <img src="./logo.png" alt="Purple Park ロゴ" class="home-logo-image" />
+        </a>
+        <h1 class="title">🐂 PURPLE BULL</h1>
+      </header>
+
+      <section class="hero">
+        <img src="./bull.png" alt="紫の闘牛" class="hero-image" />
+      </section>
+
+      <section class="form-section">
+        <input id="nickname" class="input" type="text" maxlength="12" placeholder="例：むらさき太郎" />
+        <button id="start-button" class="button button--primary">GAME START</button>
+      </section>
+
+      <section class="ranking-section">
+        <div class="tabs" role="tablist">
+          <button class="tab tab--active" data-tab="today" role="tab" aria-selected="true">今日</button>
+          <button class="tab" data-tab="week" role="tab" aria-selected="false">週間</button>
+          <button class="tab" data-tab="all" role="tab" aria-selected="false">歴代</button>
+        </div>
+        <div class="ranking-lists">
+          <div class="ranking-list ranking-list--active" data-panel="today" role="tabpanel">
+            <ul id="ranking-today" class="ranking-items">
+              <li class="ranking-item ranking-item--placeholder">今日のランキングを読み込み中…</li>
+            </ul>
+          </div>
+          <div class="ranking-list" data-panel="week" role="tabpanel">
+            <ul id="ranking-week" class="ranking-items">
+              <li class="ranking-item ranking-item--placeholder">週間ランキングを読み込み中…</li>
+            </ul>
+          </div>
+          <div class="ranking-list" data-panel="all" role="tabpanel">
+            <ul id="ranking-all" class="ranking-items">
+              <li class="ranking-item ranking-item--placeholder">歴代ランキングを読み込み中…</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer"></footer>
+    </main>
+
+    <!-- ゲーム画面 -->
+    <main id="screen-game" class="screen">
+      <header class="game-header">
+        <span class="game-score-label">🥩 <span id="score-value" class="game-score-value">0</span></span>
+        <span class="game-best-label">BEST: <span id="best-value">0</span></span>
+        <button id="quit-button" class="quit-button" type="button" aria-label="ゲームを終了">✕</button>
+      </header>
+      <section class="game-section">
+        <div class="game-field-wrapper">
+          <div id="game-field" class="game-field"></div>
+        </div>
+        <p class="swipe-hint" id="swipe-hint">← SWIPE TO MOVE →</p>
+      </section>
+    </main>
+
+    <!-- ゲームオーバーモーダル -->
+    <div id="gameover-overlay" class="gameover-overlay" aria-hidden="true">
+      <div class="gameover-dialog">
+        <h2 class="gameover-title">GAME OVER</h2>
+        <p class="gameover-score">
+          <span class="gameover-score-label">今回の記録：</span>
+          <span id="gameover-score-value" class="gameover-score-value">0</span>
+          <span class="gameover-score-unit">🥩</span>
+        </p>
+        <p id="gameover-badge" class="gameover-badge gameover-badge--hidden">New Record!</p>
+        <div class="gameover-actions">
+          <button id="gameover-retry" class="gameover-button gameover-button--primary" type="button">再挑戦</button>
+          <button id="gameover-home" class="gameover-button gameover-button--secondary" type="button">トップへ戻る</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./supabase-config.js" defer></script>
+  <script src="./supabase-api.js" defer></script>
+  <script src="./game.js" defer></script>
+  <script src="./main.js" defer></script>
+</body>
+</html>
