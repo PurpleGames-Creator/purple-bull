@@ -123,8 +123,9 @@ class BullGame {
       this._gameOver(); return;
     }
 
-    // 自己衝突
-    if (this.snake.some(s => s.row === next.row && s.col === next.col)) {
+    // 自己衝突（テールは今フレームで抜けるので除外）
+    const lastIdx = this.snake.length - 1;
+    if (this.snake.some((s, i) => i !== lastIdx && s.row === next.row && s.col === next.col)) {
       this._gameOver(); return;
     }
 
