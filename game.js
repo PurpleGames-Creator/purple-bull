@@ -437,9 +437,14 @@ class BullGame {
       if (this.scoreEl) this.scoreEl.textContent = this.score;
 
       // 速度上げの処理を次のフレームで実行（メインスレッドのブロッキング回避）
-      if (this.TICK > 120) {
+      // 通常の肉：-3ms、特別な肉：-9ms、上限260ms
+      if (this.TICK > 260) {
         requestAnimationFrame(() => {
-          this.TICK -= 3;
+          const speedDecrease = ateSpecial ? 9 : 3;
+          this.TICK -= speedDecrease;
+          if (this.TICK < 260) {
+            this.TICK = 260; // 上限260msで固定
+          }
           clearInterval(this.timerId);
           this.timerId = setInterval(() => this._tick(), this.TICK);
         });
