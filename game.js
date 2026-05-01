@@ -163,7 +163,9 @@ class BullGame {
       }
 
       el.style.display = '';
-      el.style.transform = `translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px) rotate(${bodyRotate}deg)`;
+      el.style.left = cellEl.offsetLeft + 'px';
+      el.style.top = cellEl.offsetTop + 'px';
+      el.style.transform = `rotate(${bodyRotate}deg)`;
 
       if (needsInit) {
         el.getBoundingClientRect(); // force reflow
@@ -198,12 +200,16 @@ class BullGame {
       h.style.transition = 'none';
       h.style.width  = cellEl.offsetWidth  + 'px';
       h.style.height = cellEl.offsetHeight + 'px';
-      h.style.transform = `rotate(${headRotate}deg) translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px)`;
+      h.style.left   = cellEl.offsetLeft + 'px';
+      h.style.top    = cellEl.offsetTop  + 'px';
+      h.style.transform = `rotate(${headRotate}deg)`;
       h.getBoundingClientRect(); // force reflow
       h.style.transition = '';
       this._firstRender = false;
     } else {
-      h.style.transform = `rotate(${headRotate}deg) translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px)`;
+      h.style.left   = cellEl.offsetLeft + 'px';
+      h.style.top    = cellEl.offsetTop  + 'px';
+      h.style.transform = `rotate(${headRotate}deg)`;
     }
   }
 
