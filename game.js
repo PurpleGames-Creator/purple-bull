@@ -216,20 +216,18 @@ class BullGame {
     const cellEl = this.cells[row][col];
     const h = this.headEl;
     const headRotate = this._headRotateDeg();
+    const x = cellEl.offsetLeft;
+    const y = cellEl.offsetTop;
 
     if (this._firstRender) {
       h.style.transition = 'none';
       h.style.width  = cellEl.offsetWidth  + 'px';
       h.style.height = cellEl.offsetHeight + 'px';
-      h.style.left   = cellEl.offsetLeft + 'px';
-      h.style.top    = cellEl.offsetTop  + 'px';
-      h.style.transform = `rotate(${headRotate}deg)`;
+      h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
       h.getBoundingClientRect(); // force reflow
       h.style.removeProperty('transition');
       this._firstRender = false;
     } else {
-      const x = cellEl.offsetLeft;
-      const y = cellEl.offsetTop;
       h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
     }
   }
