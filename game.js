@@ -141,7 +141,7 @@ class BullGame {
     this.dir     = { dr: 0, dc: 1 };
     this.nextDir = { dr: 0, dc: 1 };
     this.moveDirHistory = [{ dr: 0, dc: 1 }];
-    this.score   = 0;
+    this.score   = 1;
   }
 
   _placeMeat() {
@@ -368,13 +368,15 @@ class BullGame {
     this.snake.unshift(next);
     if (ate) {
       this._playMeatSound();
-      this.score++;
-      if (this.scoreEl) this.scoreEl.textContent = this.score;
 
-      // 特別な肉の場合、3 匹追加
+      // 特別な肉の場合は +3、通常の肉は +1
       if (ateSpecial) {
+        this.score += 3;
         this.skipPopCount = 3;
+      } else {
+        this.score++;
       }
+      if (this.scoreEl) this.scoreEl.textContent = this.score;
 
       // 速度上げの処理を次のフレームで実行（メインスレッドのブロッキング回避）
       if (this.TICK > 120) {
