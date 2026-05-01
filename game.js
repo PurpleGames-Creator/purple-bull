@@ -198,12 +198,12 @@ class BullGame {
       h.style.transition = 'none';
       h.style.width  = cellEl.offsetWidth  + 'px';
       h.style.height = cellEl.offsetHeight + 'px';
-      h.style.transform = `translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px) rotate(${headRotate}deg)`;
+      h.style.transform = `rotate(${headRotate}deg) translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px)`;
       h.getBoundingClientRect(); // force reflow
       h.style.transition = '';
       this._firstRender = false;
     } else {
-      h.style.transform = `translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px) rotate(${headRotate}deg)`;
+      h.style.transform = `rotate(${headRotate}deg) translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px)`;
     }
   }
 
