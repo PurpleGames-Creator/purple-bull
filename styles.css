@@ -301,10 +301,9 @@ body {
   overflow: hidden;
 }
 
-/* ========== 3D フィールド ========== */
+/* ========== 2D フィールド ========== */
 
 .game-field-wrapper {
-  perspective: 500px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -314,8 +313,6 @@ body {
 
 .game-field {
   position: relative;
-  transform: rotateX(40deg);
-  transform-style: preserve-3d;
   display: grid;
   grid-template-columns: repeat(15, 1fr);
   gap: 2px;
@@ -324,7 +321,7 @@ body {
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
 .cell {
