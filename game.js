@@ -20,6 +20,7 @@ class BullGame {
     this._firstRender = true;
     this.bgm = null;
     this.keyQueue = [];
+    this.soundPool = {};
   }
 
   start() {
@@ -30,6 +31,8 @@ class BullGame {
     this.running = true;
     this.timerId = setInterval(() => this._tick(), this.TICK);
 
+    this._preloadSounds();
+
     if (!this.bgm) {
       this.bgm = new Audio('./bgm.mp3');
       this.bgm.loop = true;
@@ -37,6 +40,18 @@ class BullGame {
     }
     this.bgm.currentTime = 0;
     this.bgm.play().catch(err => console.warn('Failed to play BGM:', err));
+  }
+
+  _preloadSounds() {
+    const sounds = ['bashi.mp3', 'dosu.mp3', 'paku.mp3', 'kabe.mp3', 'ushi.mp3'];
+    sounds.forEach(filename => {
+      const key = filename.replace('.mp3', '');
+      if (!this.soundPool[key]) {
+        const audio = new Audio('./' + filename);
+        audio.volume = 0.5;
+        this.soundPool[key] = audio;
+      }
+    });
   }
 
   destroy() {
@@ -305,9 +320,13 @@ class BullGame {
   }
 
   _playSound(filename) {
-    const audio = new Audio('./' + filename);
+    const key = filename.replace('.mp3', '');
+    const audio = this.soundPool[key];
+    if (!audio) {
+      console.warn(`Sound ${filename} not preloaded`);
+      return;
+    }
     audio.currentTime = 0;
-    audio.volume = 0.5;
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(err => console.warn(`Failed to play sound ${filename}:`, err.message));
