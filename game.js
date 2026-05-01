@@ -69,12 +69,12 @@ class BullGame {
     // 逆方向転換を無視（即死防止）
     if (dr === -this.nextDir.dr && dc === -this.nextDir.dc) return;
 
-    // マスのど真ん中までは方向転換可能：2マス先が体と衝突するかをチェック
+    // 次のマスに差し掛かったら方向転換可能：3マス先が体と衝突するかをチェック
     const head = this.snake[0];
     const second = this.snake[1];
     if (second) {
-      const nextHeadRow = head.row + this.nextDir.dr + dr;
-      const nextHeadCol = head.col + this.nextDir.dc + dc;
+      const nextHeadRow = head.row + this.nextDir.dr * 2 + dr;
+      const nextHeadCol = head.col + this.nextDir.dc * 2 + dc;
       if (nextHeadRow === second.row && nextHeadCol === second.col) {
         return;
       }
