@@ -300,6 +300,8 @@ body {
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
   padding-bottom: max(48px, env(safe-area-inset-bottom));
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ========== 2D フィールド ========== */
