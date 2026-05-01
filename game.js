@@ -82,9 +82,9 @@ class BullGame {
     }
 
     // 方向転換時に音声を再生（nextDir と異なる場合のみ）
-    if (dr !== this.nextDir.dr || dc !== this.nextDir.dc) {
-      this._playSound('bashi.mp3');
-    }
+    // if (dr !== this.nextDir.dr || dc !== this.nextDir.dc) {
+    //   this._playSound('bashi.mp3');
+    // }
 
     this.dir = { dr, dc };      // 頭の向きを即座に更新
     this.nextDir = { dr, dc };  // 移動方向も更新
