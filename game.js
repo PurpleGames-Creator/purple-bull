@@ -130,6 +130,22 @@ class BullGame {
 
   _placeMeat() {
     const snakeSet = new Set(this.snake.map(s => s.row * this.GRID_COLS + s.col));
+    const totalCells = this.GRID_ROWS * this.GRID_COLS;
+    const snakeCells = this.snake.length;
+
+    // Snake がフィールドの大部分を占めない場合、ランダム試行で高速化
+    if (snakeCells < totalCells * 0.8) {
+      for (let attempts = 0; attempts < 50; attempts++) {
+        const r = Math.floor(Math.random() * this.GRID_ROWS);
+        const c = Math.floor(Math.random() * this.GRID_COLS);
+        if (!snakeSet.has(r * this.GRID_COLS + c)) {
+          this.meat = { row: r, col: c };
+          return;
+        }
+      }
+    }
+
+    // フォールバック: フィールド全体をスキャン
     const empty = [];
     for (let r = 0; r < this.GRID_ROWS; r++) {
       for (let c = 0; c < this.GRID_COLS; c++) {
@@ -324,10 +340,13 @@ class BullGame {
       this.score++;
       if (this.scoreEl) this.scoreEl.textContent = this.score;
 
+      // 速度上げの処理を次のフレームで実行（メインスレッドのブロッキング回避）
       if (this.TICK > 120) {
-        this.TICK -= 3;
-        clearInterval(this.timerId);
-        this.timerId = setInterval(() => this._tick(), this.TICK);
+        requestAnimationFrame(() => {
+          this.TICK -= 3;
+          clearInterval(this.timerId);
+          this.timerId = setInterval(() => this._tick(), this.TICK);
+        });
       }
 
       this._placeMeat();
