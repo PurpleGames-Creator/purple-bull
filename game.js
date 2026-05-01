@@ -51,8 +51,8 @@ class BullGame {
       this.bgm = new Audio('./newbgm.mp3');
       this.bgm.loop = false; // 手動ループで制御
       this.bgm.volume = 0.5;
-      this.bgm.preload = 'none'; // iOS での事前読み込み問題を回避
-      this.bgm.crossOrigin = 'anonymous';
+      this.bgm.preload = 'auto'; // メタデータの事前読み込みを有効化
+      // crossOrigin は削除（HTTPサーバーから提供される場合は自動処理）
 
       // 手動ループ処理：曲の終了時に自動リセット
       this.bgm.addEventListener('ended', () => {
@@ -60,9 +60,10 @@ class BullGame {
         this.bgm.play().catch(err => console.warn('BGM loop play failed:', err.message));
       });
 
-      // iOS での再生開始
-      this.bgm.addEventListener('loadstart', () => {
-        console.log('BGM loading started');
+      // エラーハンドリング
+      this.bgm.addEventListener('error', (e) => {
+        console.warn('BGM load error:', e.target.error?.code, e.target.error?.message);
+        this._tryBGMFallback();
       });
     }
 
@@ -372,17 +373,27 @@ class BullGame {
       this._playSound('ushi.mp3');
     }, 400);
 
-    // 頭を壁/自分の方向へ半セル分めり込ませる（transform を使用）
+    // 衝突直後に蛇の頭を現在位置で正確に描画
     const cellEl = this.cells[this.snake[0].row][this.snake[0].col];
-    const cellW = cellEl.offsetWidth;
-    const cellH = cellEl.offsetHeight;
     const h = this.headEl;
-    const x = cellEl.offsetLeft + this.dir.dc * cellW * 0.5;
-    const y = cellEl.offsetTop + this.dir.dr * cellH * 0.5;
+    const x = cellEl.offsetLeft;
+    const y = cellEl.offsetTop;
     const headRotate = this._headRotateDeg();
-    h.style.transition = 'transform 0.12s ease-out';
+
+    // 一度、アニメーションなしで正確な位置に配置
+    h.style.transition = 'none';
     h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
-    h.classList.add('snake-head--crash');
+
+    // 次フレームでアニメーション開始（衝突方向へ半セル進む）
+    requestAnimationFrame(() => {
+      const cellW = cellEl.offsetWidth;
+      const cellH = cellEl.offsetHeight;
+      const crashX = x + this.dir.dc * cellW * 0.5;
+      const crashY = y + this.dir.dr * cellH * 0.5;
+      h.style.transition = 'transform 0.12s ease-out';
+      h.style.transform = `translate(${crashX}px, ${crashY}px) rotate(${headRotate}deg)`;
+      h.classList.add('snake-head--crash');
+    });
 
     setTimeout(() => this._gameOver(), 2000);
   }
