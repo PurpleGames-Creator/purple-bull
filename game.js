@@ -308,7 +308,10 @@ class BullGame {
     const audio = new Audio('./' + filename);
     audio.currentTime = 0;
     audio.volume = 0.5;
-    audio.play().catch(err => console.warn('Failed to play sound:', err));
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => console.warn(`Failed to play sound ${filename}:`, err.message));
+    }
   }
 
 }
