@@ -202,7 +202,7 @@ class BullGame {
 
     const { dr, dc } = targetMoveDir;
     if (dc === 1)  return 90;
-    if (dc === -1) return -90;
+    if (dc === -1) return 270;
     if (dr === 1)  return 180;
     return 0;
   }
@@ -233,7 +233,7 @@ class BullGame {
   _headRotateDeg() {
     const { dr, dc } = this.dir;
     if (dc === 1)  return 90;    // right
-    if (dc === -1) return -90;   // left
+    if (dc === -1) return 270;   // left
     if (dr === 1)  return 180;   // down
     return 0;                    // up
   }
