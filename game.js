@@ -195,8 +195,13 @@ class BullGame {
       return;
     }
 
-    // スコア < 30 の場合、1/5 の確率で特別な肉を出現
-    const isSpecial = this.score < 30 && Math.random() < 0.2;
+    // 特別な肉の出現確率：スコアに応じて変更
+    let isSpecial = false;
+    if (this.score <= 20) {
+      isSpecial = Math.random() < 0.25; // 1/4 の確率
+    } else if (this.score <= 50) {
+      isSpecial = Math.random() < 0.2;  // 1/5 の確率
+    }
 
     // ランダム試行で高速化（100回に増やして成功率UP）
     for (let attempts = 0; attempts < 100; attempts++) {
@@ -407,13 +412,15 @@ class BullGame {
     const ateSpecial = ate && this.meat.isSpecial;
     this.snake.unshift(next);
     if (ate) {
-      this._playMeatSound();
-
-      // 特別な肉の場合は +3、通常の肉は +1
+      // 特別な肉の場合は3回、通常の肉は1回効果音を鳴らす
       if (ateSpecial) {
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => this._playMeatSound(), i * 100);
+        }
         this.score += 3;
         this.skipPopCount = 3;
       } else {
+        this._playMeatSound();
         this.score++;
       }
       if (this.scoreEl) this.scoreEl.textContent = this.score;
