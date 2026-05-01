@@ -38,14 +38,29 @@ class BullGame {
     this.timerId = setInterval(() => this._tick(), this.TICK);
 
     this._preloadSounds();
+    this._initBGM();
+  }
+
+  _initBGM() {
+    // iOS の AudioContext を resume（suspended 状態を解除）
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(err => console.warn('AudioContext resume failed:', err));
+    }
 
     if (!this.bgm) {
       this.bgm = new Audio('./newbgm.mp3');
       this.bgm.loop = true;
       this.bgm.volume = 0.5;
+      this.bgm.preload = 'auto';
     }
+
     this.bgm.currentTime = 0;
-    this.bgm.play().catch(err => console.warn('Failed to play BGM:', err));
+    const playPromise = this.bgm.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn('BGM play failed:', err.message);
+      });
+    }
   }
 
   _preloadSounds() {
