@@ -388,7 +388,8 @@ body {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: clamp(8px, 1.8vw, 14px);
+  font-size: clamp(18px, 4.5vw, 28px);
+  line-height: 1;
 }
 
 .cell--meat::after { content: '🥩'; }
