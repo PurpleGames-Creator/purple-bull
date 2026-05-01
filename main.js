@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // スワイプ操作
-  const SWIPE_MIN = 30;
+  const SWIPE_MIN = 15;
   let touchStartX = 0, touchStartY = 0;
 
   document.getElementById('screen-game')?.addEventListener('touchstart', (e) => {
