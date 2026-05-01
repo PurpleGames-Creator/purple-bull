@@ -92,7 +92,7 @@ async function fetchRanking(range) {
       if (diff !== 0) return diff;
       return new Date(a.created_at || 0) - new Date(b.created_at || 0);
     })
-    .slice(0, 10);
+    .slice(0, 100);
 
   return { data: deduped, error: null };
 }
