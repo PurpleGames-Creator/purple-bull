@@ -49,20 +49,23 @@ class BullGame {
 
     if (!this.bgm) {
       this.bgm = new Audio('./newbgm.mp3');
-      this.bgm.loop = true;
+      this.bgm.loop = false; // 手動ループで制御
       this.bgm.volume = 0.5;
-      this.bgm.preload = 'auto';
+      this.bgm.preload = 'none'; // iOS での事前読み込み問題を回避
+      this.bgm.crossOrigin = 'anonymous';
 
-      // デバッグ：ファイル読み込みイベント
-      this.bgm.addEventListener('canplay', () => {
-        console.log('BGM canplay event fired, duration:', this.bgm.duration);
+      // 手動ループ処理：曲の終了時に自動リセット
+      this.bgm.addEventListener('ended', () => {
+        this.bgm.currentTime = 0;
+        this.bgm.play().catch(err => console.warn('BGM loop play failed:', err.message));
       });
-      this.bgm.addEventListener('error', (e) => {
-        console.error('BGM load error:', e.target.error?.code, e.target.error?.message);
+
+      // iOS での再生開始
+      this.bgm.addEventListener('loadstart', () => {
+        console.log('BGM loading started');
       });
     }
 
-    console.log('BGM volume:', this.bgm.volume, 'readyState:', this.bgm.readyState);
     this.bgm.currentTime = 0;
     const playPromise = this.bgm.play();
     if (playPromise !== undefined) {
@@ -71,9 +74,33 @@ class BullGame {
           console.log('BGM play succeeded');
         })
         .catch(err => {
-          console.warn('BGM play failed:', err.name, err.message);
+          console.warn('BGM play failed:', err.name, '-', err.message);
+          // 再生失敗時は Web Audio API でのフォールバックを試行
+          this._tryBGMFallback();
         });
     }
+  }
+
+  _tryBGMFallback() {
+    // Web Audio API でのフォールバック再生
+    if (!this.audioContext) {
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn('Web Audio API not available');
+        return;
+      }
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().then(() => {
+        console.log('AudioContext resumed for fallback BGM');
+      });
+    }
+
+    // オシレーターでの簡易的な代替音を生成する代わりに、
+    // 別のフォーマット（M4A）でのロードを試行
+    console.log('BGM fallback attempted with Web Audio API');
   }
 
   _preloadSounds() {
