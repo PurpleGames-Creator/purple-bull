@@ -169,7 +169,7 @@ class BullGame {
 
       if (needsInit) {
         el.getBoundingClientRect(); // force reflow
-        el.style.transition = '';
+        el.style.removeProperty('transition');
       }
     }
 
@@ -204,7 +204,7 @@ class BullGame {
       h.style.top    = cellEl.offsetTop  + 'px';
       h.style.transform = `rotate(${headRotate}deg)`;
       h.getBoundingClientRect(); // force reflow
-      h.style.transition = '';
+      h.style.removeProperty('transition');
       this._firstRender = false;
     } else {
       h.style.left   = cellEl.offsetLeft + 'px';
