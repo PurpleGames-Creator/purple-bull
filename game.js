@@ -23,6 +23,8 @@ class BullGame {
     this.keyQueue = [];
     this.soundPool = {};
     this._lastMeatPos = null;
+    this._lastHeadRotate = 0;
+    this._lastBodyRotates = []; // 各セグメントの前フレーム回転角度
   }
 
   start() {
@@ -170,11 +172,24 @@ class BullGame {
         el.className = 'snake-body';
         this.fieldEl.insertBefore(el, this.headEl);
         this._bodyPool.push(el);
+        this._lastBodyRotates[poolIdx] = 0;
       }
 
       const el = this._bodyPool[poolIdx];
       const needsInit = !el.dataset.placed;
-      const bodyRotate = this._segmentRotateDeg(i);
+      let bodyRotate = this._segmentRotateDeg(i);
+
+      // 前フレームからの最短経路回転を計算
+      if (!needsInit) {
+        const lastRotate = this._lastBodyRotates[poolIdx] || 0;
+        const diff = bodyRotate - lastRotate;
+        if (diff > 180) {
+          bodyRotate -= 360;
+        } else if (diff < -180) {
+          bodyRotate += 360;
+        }
+      }
+      this._lastBodyRotates[poolIdx] = bodyRotate;
 
       if (needsInit) {
         el.style.transition = 'none';
@@ -215,7 +230,19 @@ class BullGame {
     const { row, col } = this.snake[0];
     const cellEl = this.cells[row][col];
     const h = this.headEl;
-    const headRotate = this._headRotateDeg();
+    let headRotate = this._headRotateDeg();
+
+    // 前フレームからの最短経路回転を計算
+    if (!this._firstRender) {
+      const diff = headRotate - this._lastHeadRotate;
+      if (diff > 180) {
+        headRotate -= 360;
+      } else if (diff < -180) {
+        headRotate += 360;
+      }
+    }
+    this._lastHeadRotate = headRotate;
+
     const x = cellEl.offsetLeft;
     const y = cellEl.offsetTop;
 
