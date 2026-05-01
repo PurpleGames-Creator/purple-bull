@@ -230,22 +230,19 @@ class BullGame {
   }
 
   _render() {
-    // 差分レンダリング：前フレームの肉を消す、新しい肉を追加
+    // 前フレームの肉クラスを削除
     if (this._lastMeatPos) {
       const el = this.cells[this._lastMeatPos.row][this._lastMeatPos.col];
-      el.className = 'cell ' + (
-        (this._lastMeatPos.row + this._lastMeatPos.col) % 2 === 0
-          ? 'cell--grass'
-          : 'cell--grass-b'
-      );
+      el.classList.remove('cell--meat', 'cell--meat-special');
     }
+
+    // 新しい肉を表示
     if (this.meat && this.cells[this.meat.row] && this.cells[this.meat.row][this.meat.col]) {
       const meatClass = this.meat.isSpecial ? 'cell--meat-special' : 'cell--meat';
       this.cells[this.meat.row][this.meat.col].classList.add(meatClass);
       this._lastMeatPos = { row: this.meat.row, col: this.meat.col, isSpecial: this.meat.isSpecial };
     } else {
       this._lastMeatPos = null;
-      this.meat = null;
     }
 
     // 頭と体を絶対配置要素で描画
