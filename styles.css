@@ -318,13 +318,15 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 2px;
+  gap: 1px;
   width: min(90vw, 360px);
   aspect-ratio: 3 / 5;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transform: translateZ(0);
+  will-change: contents;
 }
 
 .cell {
@@ -340,7 +342,7 @@ body {
 .snake-head, .snake-body {
   position: absolute;
   background-image: url('./bull.png');
-  background-size: 130%;
+  background-size: 100%;
   background-repeat: no-repeat;
   background-position: center;
   pointer-events: none;
@@ -348,20 +350,22 @@ body {
   left: 0;
   top: 0;
   transform-origin: center center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .snake-head {
   transform: rotate(var(--head-rotate, 90deg));
-  transition: left 0.3s linear, top 0.3s linear, transform 0.3s linear;
-  will-change: left, top, transform;
+  transition: transform 0.3s linear;
+  will-change: transform;
   z-index: 10;
   filter: drop-shadow(0 4px 8px rgba(168, 85, 247, 0.7));
 }
 
 .snake-body {
   transform: rotate(var(--body-rotate, 90deg));
-  transition: left 0.3s linear, top 0.3s linear, transform 0.3s linear;
-  will-change: left, top, transform;
+  transition: transform 0.3s linear;
+  will-change: transform;
   z-index: 9;
   filter: drop-shadow(0 3px 6px rgba(168, 85, 247, 0.5));
   opacity: 0.88;

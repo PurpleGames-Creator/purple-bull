@@ -22,6 +22,7 @@ class BullGame {
     this.bgm = null;
     this.keyQueue = [];
     this.soundPool = {};
+    this._lastMeatPos = null;
   }
 
   start() {
@@ -136,17 +137,20 @@ class BullGame {
   }
 
   _render() {
-    // 全セルをグラスに戻す
-    for (let r = 0; r < this.GRID_ROWS; r++) {
-      for (let c = 0; c < this.GRID_COLS; c++) {
-        const el = this.cells[r][c];
-        el.className = 'cell ' + ((r + c) % 2 === 0 ? 'cell--grass' : 'cell--grass-b');
-      }
+    // 差分レンダリング：前フレームの肉を消す、新しい肉を追加
+    if (this._lastMeatPos) {
+      const el = this.cells[this._lastMeatPos.row][this._lastMeatPos.col];
+      el.className = 'cell ' + (
+        (this._lastMeatPos.row + this._lastMeatPos.col) % 2 === 0
+          ? 'cell--grass'
+          : 'cell--grass-b'
+      );
     }
-
-    // 肉
     if (this.meat) {
       this.cells[this.meat.row][this.meat.col].classList.add('cell--meat');
+      this._lastMeatPos = { row: this.meat.row, col: this.meat.col };
+    } else {
+      this._lastMeatPos = null;
     }
 
     // 頭と体を絶対配置要素で描画
@@ -180,9 +184,9 @@ class BullGame {
       }
 
       el.style.display = '';
-      el.style.left = cellEl.offsetLeft + 'px';
-      el.style.top = cellEl.offsetTop + 'px';
-      el.style.transform = `rotate(${bodyRotate}deg)`;
+      const x = cellEl.offsetLeft;
+      const y = cellEl.offsetTop;
+      el.style.transform = `translate(${x}px, ${y}px) rotate(${bodyRotate}deg)`;
 
       if (needsInit) {
         el.getBoundingClientRect(); // force reflow
@@ -224,9 +228,9 @@ class BullGame {
       h.style.removeProperty('transition');
       this._firstRender = false;
     } else {
-      h.style.left   = cellEl.offsetLeft + 'px';
-      h.style.top    = cellEl.offsetTop  + 'px';
-      h.style.transform = `rotate(${headRotate}deg)`;
+      const x = cellEl.offsetLeft;
+      const y = cellEl.offsetTop;
+      h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
     }
   }
 
