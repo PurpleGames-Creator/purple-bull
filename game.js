@@ -480,6 +480,10 @@ class BullGame {
       }
     }
 
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(() => {});
+    }
+
     const ctx = this.audioContext;
     const now = ctx.currentTime;
     const duration = 0.12;
@@ -493,8 +497,8 @@ class BullGame {
     osc.frequency.setValueAtTime(500, now);
     osc.frequency.exponentialRampToValueAtTime(950, now + duration);
 
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+    gain.gain.setValueAtTime(0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
 
     osc.start(now);
     osc.stop(now + duration);
