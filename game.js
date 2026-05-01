@@ -40,7 +40,7 @@ class BullGame {
     this._preloadSounds();
 
     if (!this.bgm) {
-      this.bgm = new Audio('./bgm.mp3');
+      this.bgm = new Audio('./newbgm.mp3');
       this.bgm.loop = true;
       this.bgm.volume = 0.5;
     }
