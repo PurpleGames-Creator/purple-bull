@@ -25,6 +25,7 @@ class BullGame {
     this._lastMeatPos = null;
     this._lastHeadRotate = 0;
     this._lastBodyRotates = []; // 各セグメントの前フレーム回転角度
+    this.audioContext = null;
   }
 
   start() {
@@ -319,7 +320,7 @@ class BullGame {
     const ate = this.meat && next.row === this.meat.row && next.col === this.meat.col;
     this.snake.unshift(next);
     if (ate) {
-      this._playSound('paku.mp3');
+      this._playMeatSound();
       this.score++;
       if (this.scoreEl) this.scoreEl.textContent = this.score;
 
@@ -348,6 +349,36 @@ class BullGame {
     if (typeof window.handleBullGameOver === 'function') {
       window.handleBullGameOver({ nickname: this.nickname, score: this.score });
     }
+  }
+
+  _playMeatSound() {
+    if (!this.audioContext) {
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn('AudioContext not supported');
+        return;
+      }
+    }
+
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+    const duration = 0.12;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.setValueAtTime(500, now);
+    osc.frequency.exponentialRampToValueAtTime(950, now + duration);
+
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+    osc.start(now);
+    osc.stop(now + duration);
   }
 
   _playSound(filename) {
