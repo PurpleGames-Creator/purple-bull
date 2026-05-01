@@ -153,6 +153,7 @@ class BullGame {
 
       const el = this._bodyPool[poolIdx];
       const needsInit = !el.dataset.placed;
+      const bodyRotate = this._segmentRotateDeg(i);
 
       if (needsInit) {
         el.style.transition = 'none';
@@ -162,9 +163,7 @@ class BullGame {
       }
 
       el.style.display = '';
-      el.style.left = cellEl.offsetLeft + 'px';
-      el.style.top  = cellEl.offsetTop  + 'px';
-      el.style.setProperty('--body-rotate', this._segmentRotateDeg(i) + 'deg');
+      el.style.transform = `translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px) rotate(${bodyRotate}deg)`;
 
       if (needsInit) {
         el.getBoundingClientRect(); // force reflow
@@ -193,21 +192,18 @@ class BullGame {
     const { row, col } = this.snake[0];
     const cellEl = this.cells[row][col];
     const h = this.headEl;
+    const headRotate = this._headRotateDeg();
 
     if (this._firstRender) {
       h.style.transition = 'none';
-      h.style.left   = cellEl.offsetLeft + 'px';
-      h.style.top    = cellEl.offsetTop  + 'px';
       h.style.width  = cellEl.offsetWidth  + 'px';
       h.style.height = cellEl.offsetHeight + 'px';
-      h.style.setProperty('--head-rotate', this._headRotateDeg() + 'deg');
+      h.style.transform = `translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px) rotate(${headRotate}deg)`;
       h.getBoundingClientRect(); // force reflow
       h.style.transition = '';
       this._firstRender = false;
     } else {
-      h.style.left   = cellEl.offsetLeft + 'px';
-      h.style.top    = cellEl.offsetTop  + 'px';
-      h.style.setProperty('--head-rotate', this._headRotateDeg() + 'deg');
+      h.style.transform = `translate(${cellEl.offsetLeft}px, ${cellEl.offsetTop}px) rotate(${headRotate}deg)`;
     }
   }
 

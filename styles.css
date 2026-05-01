@@ -345,18 +345,23 @@ body {
   background-position: center;
   pointer-events: none;
   border-radius: 3px;
+  left: 0;
+  top: 0;
+  transform-origin: center center;
 }
 
 .snake-head {
   transform: rotate(var(--head-rotate, 90deg));
-  transition: left 0.3s linear, top 0.3s linear;
+  transition: transform 0.3s linear;
+  will-change: transform;
   z-index: 10;
   filter: drop-shadow(0 4px 8px rgba(168, 85, 247, 0.7));
 }
 
 .snake-body {
   transform: rotate(var(--body-rotate, 90deg));
-  transition: left 0.3s linear, top 0.3s linear;
+  transition: transform 0.3s linear;
+  will-change: transform;
   z-index: 9;
   filter: drop-shadow(0 3px 6px rgba(168, 85, 247, 0.5));
   opacity: 0.88;
