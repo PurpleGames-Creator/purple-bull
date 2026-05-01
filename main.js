@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentGame) { currentGame.destroy(); currentGame = null; }
 
     lastNickname = nickname;
-    scoreEl.textContent = '0';
+    scoreEl.textContent = '1';
     updateBestDisplay();
 
     if (swipeHint) swipeHint.style.opacity = '1';
