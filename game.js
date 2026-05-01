@@ -26,6 +26,7 @@ class BullGame {
     this._lastHeadRotate = 0;
     this._lastBodyRotates = []; // 各セグメントの前フレーム回転角度
     this.audioContext = null;
+    this.skipPopCount = 0; // 特別な肉で snake を成長させるカウント
   }
 
   start() {
@@ -139,12 +140,15 @@ class BullGame {
       return;
     }
 
+    // スコア < 30 の場合、1/5 の確率で特別な肉を出現
+    const isSpecial = this.score < 30 && Math.random() < 0.2;
+
     // ランダム試行で高速化（100回に増やして成功率UP）
     for (let attempts = 0; attempts < 100; attempts++) {
       const r = Math.floor(Math.random() * this.GRID_ROWS);
       const c = Math.floor(Math.random() * this.GRID_COLS);
       if (!snakeSet.has(r * this.GRID_COLS + c)) {
-        this.meat = { row: r, col: c };
+        this.meat = { row: r, col: c, isSpecial };
         return;
       }
     }
@@ -156,7 +160,12 @@ class BullGame {
         if (!snakeSet.has(r * this.GRID_COLS + c)) empty.push({ row: r, col: c });
       }
     }
-    this.meat = empty.length > 0 ? empty[Math.floor(Math.random() * empty.length)] : null;
+    if (empty.length > 0) {
+      const pos = empty[Math.floor(Math.random() * empty.length)];
+      this.meat = { row: pos.row, col: pos.col, isSpecial };
+    } else {
+      this.meat = null;
+    }
   }
 
   _render() {
@@ -170,8 +179,9 @@ class BullGame {
       );
     }
     if (this.meat && this.cells[this.meat.row] && this.cells[this.meat.row][this.meat.col]) {
-      this.cells[this.meat.row][this.meat.col].classList.add('cell--meat');
-      this._lastMeatPos = { row: this.meat.row, col: this.meat.col };
+      const meatClass = this.meat.isSpecial ? 'cell--meat-special' : 'cell--meat';
+      this.cells[this.meat.row][this.meat.col].classList.add(meatClass);
+      this._lastMeatPos = { row: this.meat.row, col: this.meat.col, isSpecial: this.meat.isSpecial };
     } else {
       this._lastMeatPos = null;
       this.meat = null;
@@ -339,11 +349,17 @@ class BullGame {
     }
 
     const ate = this.meat && next.row === this.meat.row && next.col === this.meat.col;
+    const ateSpecial = ate && this.meat.isSpecial;
     this.snake.unshift(next);
     if (ate) {
       this._playMeatSound();
       this.score++;
       if (this.scoreEl) this.scoreEl.textContent = this.score;
+
+      // 特別な肉の場合、3 匹追加
+      if (ateSpecial) {
+        this.skipPopCount = 3;
+      }
 
       // 速度上げの処理を次のフレームで実行（メインスレッドのブロッキング回避）
       if (this.TICK > 120) {
@@ -356,7 +372,11 @@ class BullGame {
 
       this._placeMeat();
     } else {
-      this.snake.pop();
+      if (this.skipPopCount > 0) {
+        this.skipPopCount--;
+      } else {
+        this.snake.pop();
+      }
     }
 
     this._render();
