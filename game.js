@@ -133,15 +133,19 @@ class BullGame {
     const totalCells = this.GRID_ROWS * this.GRID_COLS;
     const snakeCells = this.snake.length;
 
-    // Snake がフィールドの大部分を占めない場合、ランダム試行で高速化
-    if (snakeCells < totalCells * 0.8) {
-      for (let attempts = 0; attempts < 50; attempts++) {
-        const r = Math.floor(Math.random() * this.GRID_ROWS);
-        const c = Math.floor(Math.random() * this.GRID_COLS);
-        if (!snakeSet.has(r * this.GRID_COLS + c)) {
-          this.meat = { row: r, col: c };
-          return;
-        }
+    // Snake がフィールドのほぼ全て（95%以上）を占めたら肉は配置不可
+    if (snakeCells > totalCells * 0.95) {
+      this.meat = null;
+      return;
+    }
+
+    // ランダム試行で高速化（100回に増やして成功率UP）
+    for (let attempts = 0; attempts < 100; attempts++) {
+      const r = Math.floor(Math.random() * this.GRID_ROWS);
+      const c = Math.floor(Math.random() * this.GRID_COLS);
+      if (!snakeSet.has(r * this.GRID_COLS + c)) {
+        this.meat = { row: r, col: c };
+        return;
       }
     }
 
@@ -152,7 +156,7 @@ class BullGame {
         if (!snakeSet.has(r * this.GRID_COLS + c)) empty.push({ row: r, col: c });
       }
     }
-    this.meat = empty[Math.floor(Math.random() * empty.length)] ?? null;
+    this.meat = empty.length > 0 ? empty[Math.floor(Math.random() * empty.length)] : null;
   }
 
   _render() {
@@ -165,11 +169,12 @@ class BullGame {
           : 'cell--grass-b'
       );
     }
-    if (this.meat) {
+    if (this.meat && this.cells[this.meat.row] && this.cells[this.meat.row][this.meat.col]) {
       this.cells[this.meat.row][this.meat.col].classList.add('cell--meat');
       this._lastMeatPos = { row: this.meat.row, col: this.meat.col };
     } else {
       this._lastMeatPos = null;
+      this.meat = null;
     }
 
     // 頭と体を絶対配置要素で描画
