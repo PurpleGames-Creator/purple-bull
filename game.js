@@ -1,6 +1,7 @@
 class BullGame {
   constructor({ fieldEl, scoreEl, nickname }) {
-    this.GRID  = 15;
+    this.GRID_COLS = 12;
+    this.GRID_ROWS = 20;
     this.TICK  = 300;
     this.fieldEl  = fieldEl;
     this.scoreEl  = scoreEl;
@@ -95,9 +96,9 @@ class BullGame {
     this.cells = [];
     this._firstRender = true;
     const frag = document.createDocumentFragment();
-    for (let r = 0; r < this.GRID; r++) {
+    for (let r = 0; r < this.GRID_ROWS; r++) {
       this.cells[r] = [];
-      for (let c = 0; c < this.GRID; c++) {
+      for (let c = 0; c < this.GRID_COLS; c++) {
         const el = document.createElement('div');
         el.className = 'cell ' + ((r + c) % 2 === 0 ? 'cell--grass' : 'cell--grass-b');
         this.cells[r][c] = el;
@@ -114,8 +115,9 @@ class BullGame {
   }
 
   _placeSnake() {
-    const mid = Math.floor(this.GRID / 2);
-    this.snake   = [{ row: mid, col: mid }];
+    const midRow = Math.floor(this.GRID_ROWS / 2);
+    const midCol = Math.floor(this.GRID_COLS / 2);
+    this.snake   = [{ row: midRow, col: midCol }];
     this.dir     = { dr: 0, dc: 1 };
     this.nextDir = { dr: 0, dc: 1 };
     this.moveDirHistory = [{ dr: 0, dc: 1 }];
@@ -123,11 +125,11 @@ class BullGame {
   }
 
   _placeMeat() {
-    const snakeSet = new Set(this.snake.map(s => s.row * this.GRID + s.col));
+    const snakeSet = new Set(this.snake.map(s => s.row * this.GRID_COLS + s.col));
     const empty = [];
-    for (let r = 0; r < this.GRID; r++) {
-      for (let c = 0; c < this.GRID; c++) {
-        if (!snakeSet.has(r * this.GRID + c)) empty.push({ row: r, col: c });
+    for (let r = 0; r < this.GRID_ROWS; r++) {
+      for (let c = 0; c < this.GRID_COLS; c++) {
+        if (!snakeSet.has(r * this.GRID_COLS + c)) empty.push({ row: r, col: c });
       }
     }
     this.meat = empty[Math.floor(Math.random() * empty.length)] ?? null;
@@ -135,8 +137,8 @@ class BullGame {
 
   _render() {
     // 全セルをグラスに戻す
-    for (let r = 0; r < this.GRID; r++) {
-      for (let c = 0; c < this.GRID; c++) {
+    for (let r = 0; r < this.GRID_ROWS; r++) {
+      for (let c = 0; c < this.GRID_COLS; c++) {
         const el = this.cells[r][c];
         el.className = 'cell ' + ((r + c) % 2 === 0 ? 'cell--grass' : 'cell--grass-b');
       }
@@ -275,7 +277,7 @@ class BullGame {
     const next = { row: head.row + moveDir.dr, col: head.col + moveDir.dc };
 
     // 壁衝突
-    if (next.row < 0 || next.row >= this.GRID || next.col < 0 || next.col >= this.GRID) {
+    if (next.row < 0 || next.row >= this.GRID_ROWS || next.col < 0 || next.col >= this.GRID_COLS) {
       this._startGameOverWithSound('kabe.mp3'); return;
     }
 
@@ -307,7 +309,7 @@ class BullGame {
 
     // 移動方向の履歴に追加
     this.moveDirHistory.unshift(this.nextDir);
-    if (this.moveDirHistory.length > this.GRID * this.GRID) {
+    if (this.moveDirHistory.length > this.GRID_ROWS * this.GRID_COLS) {
       this.moveDirHistory.pop();
     }
   }

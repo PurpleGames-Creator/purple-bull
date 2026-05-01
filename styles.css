@@ -314,10 +314,10 @@ body {
 .game-field {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(15, 1fr);
+  grid-template-columns: repeat(12, 1fr);
   gap: 2px;
-  width: min(78vw, 380px);
-  aspect-ratio: 1;
+  width: min(90vw, 360px);
+  aspect-ratio: 3 / 5;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
