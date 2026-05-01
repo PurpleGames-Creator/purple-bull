@@ -109,7 +109,7 @@ class BullGame {
       const key = filename.replace('.mp3', '');
       if (!this.soundPool[key]) {
         const audio = new Audio('./' + filename);
-        audio.volume = 0.5;
+        audio.volume = filename === 'ushi.mp3' ? 0.25 : 0.5;
         this.soundPool[key] = audio;
       }
     });
