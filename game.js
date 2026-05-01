@@ -372,16 +372,16 @@ class BullGame {
       this._playSound('ushi.mp3');
     }, 400);
 
-    // 頭を壁/自分の方向へ半セル分めり込ませる
+    // 頭を壁/自分の方向へ半セル分めり込ませる（transform を使用）
     const cellEl = this.cells[this.snake[0].row][this.snake[0].col];
     const cellW = cellEl.offsetWidth;
     const cellH = cellEl.offsetHeight;
     const h = this.headEl;
-    const curLeft = parseFloat(h.style.left) || cellEl.offsetLeft;
-    const curTop  = parseFloat(h.style.top)  || cellEl.offsetTop;
-    h.style.transition = 'left 0.12s ease-out, top 0.12s ease-out';
-    h.style.left = (curLeft + this.dir.dc * cellW * 0.5) + 'px';
-    h.style.top  = (curTop  + this.dir.dr * cellH * 0.5) + 'px';
+    const x = cellEl.offsetLeft + this.dir.dc * cellW * 0.5;
+    const y = cellEl.offsetTop + this.dir.dr * cellH * 0.5;
+    const headRotate = this._headRotateDeg();
+    h.style.transition = 'transform 0.12s ease-out';
+    h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
     h.classList.add('snake-head--crash');
 
     setTimeout(() => this._gameOver(), 2000);
