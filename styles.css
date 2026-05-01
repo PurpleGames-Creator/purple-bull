@@ -299,7 +299,7 @@ body {
   background: linear-gradient(160deg, #0a0015, #051205);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  padding-bottom: max(48px, env(safe-area-inset-bottom));
 }
 
 /* ========== 2D フィールド ========== */
