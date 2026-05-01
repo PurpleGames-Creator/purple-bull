@@ -52,14 +52,27 @@ class BullGame {
       this.bgm.loop = true;
       this.bgm.volume = 0.5;
       this.bgm.preload = 'auto';
+
+      // デバッグ：ファイル読み込みイベント
+      this.bgm.addEventListener('canplay', () => {
+        console.log('BGM canplay event fired, duration:', this.bgm.duration);
+      });
+      this.bgm.addEventListener('error', (e) => {
+        console.error('BGM load error:', e.target.error?.code, e.target.error?.message);
+      });
     }
 
+    console.log('BGM volume:', this.bgm.volume, 'readyState:', this.bgm.readyState);
     this.bgm.currentTime = 0;
     const playPromise = this.bgm.play();
     if (playPromise !== undefined) {
-      playPromise.catch(err => {
-        console.warn('BGM play failed:', err.message);
-      });
+      playPromise
+        .then(() => {
+          console.log('BGM play succeeded');
+        })
+        .catch(err => {
+          console.warn('BGM play failed:', err.name, err.message);
+        });
     }
   }
 
