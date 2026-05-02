@@ -58,19 +58,6 @@ class BullGame {
     this._startAnimationLoop();
 
     this._preloadSounds();
-
-    // AudioContext を初期化してモバイルでの音声再生を有効にする
-    if (!this.audioContext) {
-      try {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      } catch (e) {
-        console.warn('AudioContext initialization failed:', e);
-      }
-    }
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(err => console.warn('AudioContext resume failed:', err));
-    }
-
     this._initBGM();
 
     // リサイズイベントでキャンバスを再初期化
