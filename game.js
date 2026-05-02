@@ -71,25 +71,30 @@ class BullGame {
   _initializeCanvasSize() {
     // CSS により計算された Canvas の表示寸法を取得
     const rect = this.canvas.getBoundingClientRect();
-    const displayWidth = rect.width;
-    const displayHeight = rect.height;
+    let displayWidth = Math.floor(rect.width);
+    let displayHeight = Math.floor(rect.height);
 
-    // Canvas 内部解像度属性を更新（表示寸法と同じにする）
+    // cellSize を幅から計算
+    let cellSize = Math.floor(displayWidth / this.GRID_COLS);
+
+    // 高さから逆算した cellSize と比較（縦方向を優先）
+    const cellSizeFromHeight = Math.floor(displayHeight / this.GRID_ROWS);
+    if (cellSizeFromHeight < cellSize) {
+      cellSize = cellSizeFromHeight;
+    }
+
+    // グリッドが正確に収まるようにキャンバスサイズを調整
+    displayWidth = cellSize * this.GRID_COLS;
+    displayHeight = cellSize * this.GRID_ROWS;
+
+    // Canvas 内部解像度属性を更新
     this.canvas.width = displayWidth;
     this.canvas.height = displayHeight;
 
-    // cellSize を幅から計算
-    this.cellSize = displayWidth / this.GRID_COLS;
-
-    // 高さから逆算した cellSize と比較（縦方向を優先）
-    const cellSizeFromHeight = displayHeight / this.GRID_ROWS;
-    if (cellSizeFromHeight < this.cellSize) {
-      this.cellSize = cellSizeFromHeight;
-    }
-
-    // キャンバスサイズを更新
-    this.canvasWidth = this.canvas.width;
-    this.canvasHeight = this.canvas.height;
+    // プロパティを更新
+    this.cellSize = cellSize;
+    this.canvasWidth = displayWidth;
+    this.canvasHeight = displayHeight;
   }
 
   _initSnakeVisuals() {
@@ -417,7 +422,7 @@ class BullGame {
 
   _drawSnake() {
     const ctx = this.ctx;
-    const padding = 2;
+    const padding = 0.5;
     const size = this.cellSize - padding * 2;
 
     // 蛇の全セグメントを bull.png で描画（補間位置と回転適用）
