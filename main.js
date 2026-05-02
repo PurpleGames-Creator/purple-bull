@@ -221,17 +221,21 @@ document.addEventListener('DOMContentLoaded', () => {
     startGame(lastNickname || nicknameInput.value.trim());
   });
 
-  homeButton?.addEventListener('click', () => {
+  homeButton?.addEventListener('click', function homeButtonHandler() {
     hideGameover();
     if (currentGame) { currentGame.destroy(); currentGame = null; }
+    homeBulls = [];
+    if (homeAnimationId) { cancelAnimationFrame(homeAnimationId); homeAnimationId = null; }
     screenGame.classList.remove('screen--active');
     screenHome.classList.add('screen--active');
     updateBestDisplay();
     loadRankingAfterConnection('today');
   });
 
-  quitButton?.addEventListener('click', () => {
+  quitButton?.addEventListener('click', function quitButtonHandler() {
     if (currentGame) { currentGame.destroy(); currentGame = null; }
+    homeBulls = [];
+    if (homeAnimationId) { cancelAnimationFrame(homeAnimationId); homeAnimationId = null; }
     screenGame.classList.remove('screen--active');
     screenHome.classList.add('screen--active');
     updateBestDisplay();
@@ -364,20 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
     createHomeBull(x, y);
-  });
-
-  const originalHomeButtonClick = homeButton.onclick || (() => {});
-  homeButton.addEventListener('click', () => {
-    homeBulls = [];
-    if (homeAnimationId) cancelAnimationFrame(homeAnimationId);
-    originalHomeButtonClick();
-  });
-
-  const originalQuitButtonClick = quitButton.onclick || (() => {});
-  quitButton.addEventListener('click', () => {
-    homeBulls = [];
-    if (homeAnimationId) cancelAnimationFrame(homeAnimationId);
-    originalQuitButtonClick();
   });
 
   const observeScreenChange = () => {
