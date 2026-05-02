@@ -527,7 +527,7 @@ class BullGame {
       // 特別な肉は専用の音を1回、通常の肉は通常音を1回鳴らす
       if (ateSpecial) {
         this._playSpecialMeatSound();
-        this.score += 3;
+        this.score += 4;  // unshift(1) + skipPopCount(3) = 4マス成長
         this.skipPopCount = 3;
       } else {
         this._playMeatSound();
