@@ -448,11 +448,9 @@ class BullGame {
     const ateSpecial = ate && this.meat.isSpecial;
     this.snake.unshift(next);
     if (ate) {
-      // 特別な肉の場合は3回、通常の肉は1回効果音を鳴らす
+      // 特別な肉は専用の音を1回、通常の肉は通常音を1回鳴らす
       if (ateSpecial) {
-        for (let i = 0; i < 3; i++) {
-          setTimeout(() => this._playMeatSound(), i * 100);
-        }
+        this._playSpecialMeatSound();
         this.score += 3;
         this.skipPopCount = 3;
       } else {
@@ -539,6 +537,41 @@ class BullGame {
     osc.frequency.exponentialRampToValueAtTime(950, now + duration);
 
     gain.gain.setValueAtTime(0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
+
+    osc.start(now);
+    osc.stop(now + duration);
+  }
+
+  _playSpecialMeatSound() {
+    // 特別肉用の音（高ピッチで上昇する「ポッ」という音）
+    if (!this.audioContext) {
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn('AudioContext not supported');
+        return;
+      }
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(() => {});
+    }
+
+    const ctx = this.audioContext;
+    const now = ctx.currentTime;
+    const duration = 0.15;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(1200, now + duration);
+
+    gain.gain.setValueAtTime(0.5, now);
     gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
 
     osc.start(now);
