@@ -245,9 +245,20 @@ class BullGame {
 
   _drawBackground() {
     const ctx = this.ctx;
-    ctx.fillStyle = '#90EE90';
-    ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
+    // 市松模様の背景（緑色と深い緑色）
+    const lightGreen = '#90EE90';
+    const darkGreen = '#2d5016';
+
+    for (let row = 0; row < this.GRID_ROWS; row++) {
+      for (let col = 0; col < this.GRID_COLS; col++) {
+        const isEven = (row + col) % 2 === 0;
+        ctx.fillStyle = isEven ? lightGreen : darkGreen;
+        ctx.fillRect(col * this.cellSize, row * this.cellSize, this.cellSize, this.cellSize);
+      }
+    }
+
+    // グリッドライン（薄い）
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= this.GRID_COLS; i++) {
@@ -299,9 +310,9 @@ class BullGame {
     // 特別な肉の出現確率：スコアに応じて変更
     let isSpecial = false;
     if (this.score <= 20) {
-      isSpecial = Math.random() < (1/3); // 1/3 の確率
+      isSpecial = Math.random() < 0.4; // 40% の確率
     } else {
-      isSpecial = Math.random() < 0.2;  // 1/5 の確率（21以降）
+      isSpecial = Math.random() < 0.3; // 30% の確率（21以降）
     }
 
     // ランダム試行で肉配置（見つからなければ肉なし状態のまま）
@@ -331,10 +342,21 @@ class BullGame {
     const x = this.meat.col * this.cellSize;
     const y = this.meat.row * this.cellSize;
 
-    // 特別な肉の場合は背景を黄色で塗る
+    // 特別な肉の場合は背景を黄色で塗る＋ネオン効果
     if (this.meat.isSpecial) {
       ctx.fillStyle = '#FFD700';
       ctx.fillRect(x, y, this.cellSize, this.cellSize);
+
+      // ネオン光輝効果（脈動するグロー）
+      const glowIntensity = Math.sin(Date.now() / 200) * 0.5 + 0.5; // 0-1 で脈動
+      ctx.shadowColor = `rgba(255, 215, 0, ${glowIntensity * 0.8})`;
+      ctx.shadowBlur = 15 * glowIntensity;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
     }
 
     // 肉の絵文字を描画
@@ -526,7 +548,17 @@ class BullGame {
   }
 
   _playSpecialMeatSound() {
-    // 特別肉用の音（「きゅるるーん」という上昇して下降する音）
+    // 特別肉用の音：通常の肉の音を素早く3連続で鳴らす
+    const delay1 = 0;
+    const delay2 = 0.15;
+    const delay3 = 0.3;
+
+    this._playMeatSoundWithDelay(delay1);
+    this._playMeatSoundWithDelay(delay2);
+    this._playMeatSoundWithDelay(delay3);
+  }
+
+  _playMeatSoundWithDelay(delayTime) {
     if (!this.audioContext) {
       try {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -540,26 +572,26 @@ class BullGame {
       this.audioContext.resume().catch(() => {});
     }
 
-    const ctx = this.audioContext;
-    const now = ctx.currentTime;
-    const duration = 0.3;
+    setTimeout(() => {
+      const ctx = this.audioContext;
+      const now = ctx.currentTime;
+      const duration = 0.12;
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
 
-    // 周波数を上昇してから下降：「きゅるるーん」という音
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.exponentialRampToValueAtTime(1400, now + duration * 0.6);
-    osc.frequency.exponentialRampToValueAtTime(300, now + duration);
+      osc.frequency.setValueAtTime(500, now);
+      osc.frequency.exponentialRampToValueAtTime(950, now + duration);
 
-    gain.gain.setValueAtTime(0.5, now);
-    gain.gain.exponentialRampToValueAtTime(0.02, now + duration);
+      gain.gain.setValueAtTime(0.6, now);
+      gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
 
-    osc.start(now);
-    osc.stop(now + duration);
+      osc.start(now);
+      osc.stop(now + duration);
+    }, delayTime * 1000);
   }
 
   _playSound(filename) {
