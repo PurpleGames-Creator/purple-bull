@@ -20,6 +20,82 @@ document.addEventListener('DOMContentLoaded', () => {
   // スコアをそのまま表示（千の位の0を削除）
   const formatScore = (score) => String(score);
 
+  // ホーム画面 bull キャラクター物理演算
+  class HomeBull {
+    constructor(x, y, radius, bullImage) {
+      this.x = x;
+      this.y = y;
+      this.vx = (Math.random() - 0.5) * 4;
+      this.vy = -8;
+      this.radius = radius;
+      this.bullImage = bullImage;
+      this.rotation = Math.random() * Math.PI * 2;
+    }
+
+    update(gravity, groundY, canvasWidth) {
+      this.vy += gravity;
+      this.x += this.vx;
+      this.y += this.vy;
+      this.rotation += (this.vx * 0.02);
+
+      if (this.y + this.radius >= groundY) {
+        this.y = groundY - this.radius;
+        this.vy *= -0.75;
+        if (Math.abs(this.vy) < 0.3) this.vy = 0;
+      }
+
+      if (this.x - this.radius < 0) {
+        this.x = this.radius;
+        this.vx *= -0.7;
+      } else if (this.x + this.radius > canvasWidth) {
+        this.x = canvasWidth - this.radius;
+        this.vx *= -0.7;
+      }
+
+      return this.y > canvasHeight + 50;
+    }
+
+    collidesWith(other) {
+      const dx = this.x - other.x;
+      const dy = this.y - other.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      return dist < this.radius + other.radius;
+    }
+
+    resolveCollision(other) {
+      const dx = other.x - this.x;
+      const dy = other.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      const overlap = (this.radius + other.radius - dist) / 2;
+      this.x -= nx * overlap;
+      this.y -= ny * overlap;
+      other.x += nx * overlap;
+      other.y += ny * overlap;
+
+      const dvx = other.vx - this.vx;
+      const dvy = other.vy - this.vy;
+      const dot = dvx * nx + dvy * ny;
+
+      if (dot > 0) return;
+
+      this.vx += nx * dot * 0.8;
+      this.vy += ny * dot * 0.8;
+      other.vx -= nx * dot * 0.8;
+      other.vy -= ny * dot * 0.8;
+    }
+
+    draw(ctx) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rotation);
+      ctx.drawImage(this.bullImage, -this.radius, -this.radius, this.radius * 2, this.radius * 2);
+      ctx.restore();
+    }
+  }
+
   let currentGame = null;
   let lastNickname = null;
   let gameoverAnimId = null;
@@ -204,6 +280,124 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (swipeHint) swipeHint.style.opacity = '0';
   }, { passive: true });
+
+  // ホーム画面 bull キャラクター物理演算管理
+  const heroCanvas = document.getElementById('hero-canvas');
+  const formSection = document.querySelector('.form-section');
+  let homeBulls = [];
+  let homeBullImage = null;
+  let homeAnimationId = null;
+  const GRAVITY = 0.3;
+  let canvasHeight = 200;
+
+  const initHeroCanvas = () => {
+    if (!heroCanvas) return;
+    const rect = document.querySelector('.hero').getBoundingClientRect();
+    heroCanvas.width = Math.min(window.innerWidth - 40, 500);
+    heroCanvas.height = canvasHeight;
+    heroCanvas.style.width = heroCanvas.width + 'px';
+    heroCanvas.style.height = heroCanvas.height + 'px';
+  };
+
+  const loadBullImage = () => {
+    if (homeBullImage) return Promise.resolve();
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        homeBullImage = img;
+        resolve();
+      };
+      img.src = './bull.png';
+    });
+  };
+
+  const getGroundY = () => {
+    if (!formSection) return heroCanvas.height;
+    const rect = formSection.getBoundingClientRect();
+    const heroRect = heroCanvas.getBoundingClientRect();
+    return Math.min(rect.top - heroRect.top, heroCanvas.height);
+  };
+
+  const startHomeAnimation = () => {
+    const ctx = heroCanvas.getContext('2d');
+    const animate = () => {
+      ctx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
+
+      const groundY = getGroundY();
+      homeBulls = homeBulls.filter(bull => !bull.update(GRAVITY, groundY, heroCanvas.width));
+
+      for (let i = 0; i < homeBulls.length; i++) {
+        for (let j = i + 1; j < homeBulls.length; j++) {
+          if (homeBulls[i].collidesWith(homeBulls[j])) {
+            homeBulls[i].resolveCollision(homeBulls[j]);
+          }
+        }
+      }
+
+      homeBulls.forEach(bull => bull.draw(ctx));
+
+      if (screenHome.classList.contains('screen--active')) {
+        homeAnimationId = requestAnimationFrame(animate);
+      }
+    };
+    animate();
+  };
+
+  const createHomeBull = (x, y) => {
+    if (!homeBullImage) return;
+    const bull = new HomeBull(x, y, 25, homeBullImage);
+    homeBulls.push(bull);
+  };
+
+  heroCanvas.addEventListener('click', (e) => {
+    if (!screenHome.classList.contains('screen--active')) return;
+    const rect = heroCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    createHomeBull(x, y);
+  });
+
+  heroCanvas.addEventListener('touchstart', (e) => {
+    if (!screenHome.classList.contains('screen--active')) return;
+    const rect = heroCanvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    createHomeBull(x, y);
+  });
+
+  const originalHomeButtonClick = homeButton.onclick || (() => {});
+  homeButton.addEventListener('click', () => {
+    homeBulls = [];
+    if (homeAnimationId) cancelAnimationFrame(homeAnimationId);
+    originalHomeButtonClick();
+  });
+
+  const originalQuitButtonClick = quitButton.onclick || (() => {});
+  quitButton.addEventListener('click', () => {
+    homeBulls = [];
+    if (homeAnimationId) cancelAnimationFrame(homeAnimationId);
+    originalQuitButtonClick();
+  });
+
+  const observeScreenChange = () => {
+    const observer = new MutationObserver(() => {
+      if (screenHome.classList.contains('screen--active') && !homeAnimationId) {
+        loadBullImage().then(() => {
+          initHeroCanvas();
+          startHomeAnimation();
+        });
+      }
+    });
+    observer.observe(screenHome, { attributes: true, attributeFilter: ['class'] });
+  };
+
+  initHeroCanvas();
+  loadBullImage().then(() => startHomeAnimation());
+  observeScreenChange();
+  window.addEventListener('resize', () => {
+    initHeroCanvas();
+  });
 
   // 初期ランキング読み込み
   (async () => { await loadRankingAfterConnection('today'); })();
