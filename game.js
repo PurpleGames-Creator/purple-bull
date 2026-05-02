@@ -218,8 +218,8 @@ class BullGame {
       isSpecial = Math.random() < 0.2;  // 1/5 の確率
     }
 
-    // ランダム試行で高速化（200回に増やしてフォールバック頻度削減）
-    for (let attempts = 0; attempts < 200; attempts++) {
+    // ランダム試行で肉配置（見つからなければ肉なし状態のまま）
+    for (let attempts = 0; attempts < 300; attempts++) {
       const r = Math.floor(Math.random() * this.GRID_ROWS);
       const c = Math.floor(Math.random() * this.GRID_COLS);
       if (!snakeSet.has(r * this.GRID_COLS + c)) {
@@ -228,19 +228,8 @@ class BullGame {
       }
     }
 
-    // フォールバック: フィールド全体をスキャン
-    const empty = [];
-    for (let r = 0; r < this.GRID_ROWS; r++) {
-      for (let c = 0; c < this.GRID_COLS; c++) {
-        if (!snakeSet.has(r * this.GRID_COLS + c)) empty.push({ row: r, col: c });
-      }
-    }
-    if (empty.length > 0) {
-      const pos = empty[Math.floor(Math.random() * empty.length)];
-      this.meat = { row: pos.row, col: pos.col, isSpecial };
-    } else {
-      this.meat = null;
-    }
+    // フォールバック処理は削除：見つからなければ肉なし状態を許容
+    this.meat = null;
   }
 
   _render() {
@@ -461,30 +450,31 @@ class BullGame {
 
       // スコア30未満：速度を上げる（難易度上昇）
       // スコア30以上：速度を下げる（処理負荷軽減でカクつき防止）
-      requestAnimationFrame(() => {
-        if (this.score < 30) {
-          // 従来のロジック：TICK削減で高速化
-          if (this.TICK > 260) {
-            const speedDecrease = ateSpecial ? 9 : 3;
-            this.TICK -= speedDecrease;
-            if (this.TICK < 260) {
-              this.TICK = 260; // 下限260msで固定
-            }
-          }
-        } else {
-          // スコア30以上：TICK増加で低速化し処理負荷を軽減
-          const speedIncrease = ateSpecial ? 9 : 3;
-          this.TICK += speedIncrease;
-          const maxTICK = 500; // 上限500ms
-          if (this.TICK > maxTICK) {
-            this.TICK = maxTICK;
+      if (this.score < 30) {
+        // 従来のロジック：TICK削減で高速化
+        if (this.TICK > 260) {
+          const speedDecrease = ateSpecial ? 9 : 3;
+          this.TICK -= speedDecrease;
+          if (this.TICK < 260) {
+            this.TICK = 260; // 下限260msで固定
           }
         }
-        clearInterval(this.timerId);
-        this.timerId = setInterval(() => this._tick(), this.TICK);
-      });
+      } else {
+        // スコア30以上：TICK増加で低速化し処理負荷を軽減
+        const speedIncrease = ateSpecial ? 9 : 3;
+        this.TICK += speedIncrease;
+        const maxTICK = 500; // 上限500ms
+        if (this.TICK > maxTICK) {
+          this.TICK = maxTICK;
+        }
+      }
+      clearInterval(this.timerId);
+      this.timerId = setInterval(() => this._tick(), this.TICK);
 
-      this._placeMeat();
+      // 肉配置を次フレームに遅延（処理を分散）
+      requestAnimationFrame(() => {
+        this._placeMeat();
+      });
     } else {
       if (this.skipPopCount > 0) {
         this.skipPopCount--;
