@@ -544,7 +544,7 @@ class BullGame {
   }
 
   _playSpecialMeatSound() {
-    // 特別肉用の音（高ピッチで上昇する「ポッ」という音）
+    // 特別肉用の音（「きゅるるーん」という上昇して下降する音）
     if (!this.audioContext) {
       try {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -560,7 +560,7 @@ class BullGame {
 
     const ctx = this.audioContext;
     const now = ctx.currentTime;
-    const duration = 0.15;
+    const duration = 0.3;
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -568,11 +568,13 @@ class BullGame {
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.frequency.setValueAtTime(800, now);
-    osc.frequency.exponentialRampToValueAtTime(1200, now + duration);
+    // 周波数を上昇してから下降：「きゅるるーん」という音
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(1400, now + duration * 0.6);
+    osc.frequency.exponentialRampToValueAtTime(300, now + duration);
 
     gain.gain.setValueAtTime(0.5, now);
-    gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
+    gain.gain.exponentialRampToValueAtTime(0.02, now + duration);
 
     osc.start(now);
     osc.stop(now + duration);
