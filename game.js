@@ -289,19 +289,9 @@ class BullGame {
 
     for (let row = 0; row < this.GRID_ROWS; row++) {
       for (let col = 0; col < this.GRID_COLS; col++) {
-        const x = col * this.cellSize;
-        const y = row * this.cellSize;
         const isEven = (row + col) % 2 === 0;
         ctx.fillStyle = isEven ? lightGreen : darkGreen;
-        ctx.fillRect(x, y, this.cellSize, this.cellSize);
-
-        // グラデーション効果の影（濃いめ、下部に濃い）
-        const gradient = ctx.createLinearGradient(x, y, x, y + this.cellSize);
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');      // 上部：透明
-        gradient.addColorStop(0.6, 'rgba(0, 0, 0, 0.15)'); // 中部：薄い影
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.35)');   // 下部：濃い影
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, y, this.cellSize, this.cellSize);
+        ctx.fillRect(col * this.cellSize, row * this.cellSize, this.cellSize, this.cellSize);
       }
     }
 
@@ -393,13 +383,6 @@ class BullGame {
     if (this.meat.isSpecial) {
       const glowIntensity = Math.sin(Date.now() / 200) * 0.5 + 0.5; // 0-1 で脈動
 
-      // グラデーション影（立体感）
-      const shadowGradient = ctx.createLinearGradient(x, y, x + this.cellSize, y + this.cellSize);
-      shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0.2)');
-      shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-      ctx.fillStyle = shadowGradient;
-      ctx.fillRect(x, y, this.cellSize, this.cellSize);
-
       // 外側の大きなグロー（深い金色）
       ctx.shadowColor = `rgba(255, 165, 0, ${glowIntensity * 0.6})`;
       ctx.shadowBlur = 25 * glowIntensity;
@@ -450,13 +433,6 @@ class BullGame {
       // 向きを取得
       const dir = this.moveDirHistory[i] || this.nextDir;
       const rotation = this._getRotationAngle(dir);
-
-      // 影を先に描画（回転前）
-      const shadowGradient = ctx.createLinearGradient(x, y, x + size, y + size);
-      shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0.25)');
-      shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-      ctx.fillStyle = shadowGradient;
-      ctx.fillRect(x + 2, y + 2, size - 2, size - 2);
 
       ctx.save();
       ctx.translate(x + size / 2, y + size / 2);
