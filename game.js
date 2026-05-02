@@ -471,8 +471,9 @@ class BullGame {
       clearInterval(this.timerId);
       this.timerId = setInterval(() => this._tick(), this.TICK);
 
-      // 肉配置を次フレームに遅延（処理を分散）
+      // レンダリングと肉配置を次フレームに遅延（フレーム処理を大幅削減）
       requestAnimationFrame(() => {
+        this._render();
         this._placeMeat();
       });
     } else {
@@ -481,9 +482,9 @@ class BullGame {
       } else {
         this.snake.pop();
       }
+      // 肉を食べなかった時は通常通りレンダリング
+      this._render();
     }
-
-    this._render();
 
     // 移動方向の履歴に追加
     this.moveDirHistory.unshift(this.nextDir);
