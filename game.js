@@ -10,9 +10,9 @@ class BullGame {
     // Canvas 初期化
     this.canvas = this.fieldEl;
     this.ctx = this.canvas.getContext('2d');
-    this.canvasWidth = this.canvas.width;
-    this.canvasHeight = this.canvas.height;
-    this.cellSize = this.canvasWidth / this.GRID_COLS;
+    this.canvasWidth = 500;  // デフォルト値（_initializeCanvasSize で更新）
+    this.canvasHeight = 833;
+    this.cellSize = 41.67;
 
     this.cells    = [];   // cells[row][col] = HTMLElement
     this.snake    = [];   // [{row, col}, ...] head は index 0
@@ -46,6 +46,7 @@ class BullGame {
   }
 
   start() {
+    this._initializeCanvasSize();
     this._buildGrid();
     this._loadBullImage();
     this._placeSnake();
@@ -58,6 +59,37 @@ class BullGame {
 
     this._preloadSounds();
     this._initBGM();
+
+    // リサイズイベントでキャンバスを再初期化
+    this._resizeHandler = () => {
+      this._initializeCanvasSize();
+      this._drawBackground();
+    };
+    window.addEventListener('resize', this._resizeHandler);
+  }
+
+  _initializeCanvasSize() {
+    // CSS により計算された Canvas の表示寸法を取得
+    const rect = this.canvas.getBoundingClientRect();
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+
+    // Canvas 内部解像度属性を更新（表示寸法と同じにする）
+    this.canvas.width = displayWidth;
+    this.canvas.height = displayHeight;
+
+    // cellSize を幅から計算
+    this.cellSize = displayWidth / this.GRID_COLS;
+
+    // 高さから逆算した cellSize と比較（縦方向を優先）
+    const cellSizeFromHeight = displayHeight / this.GRID_ROWS;
+    if (cellSizeFromHeight < this.cellSize) {
+      this.cellSize = cellSizeFromHeight;
+    }
+
+    // キャンバスサイズを更新
+    this.canvasWidth = this.canvas.width;
+    this.canvasHeight = this.canvas.height;
   }
 
   _initSnakeVisuals() {
@@ -208,6 +240,11 @@ class BullGame {
     if (this.bgm) {
       this.bgm.pause();
       this.bgm.currentTime = 0;
+    }
+
+    // リサイズイベントリスナーの削除
+    if (this._resizeHandler) {
+      window.removeEventListener('resize', this._resizeHandler);
     }
   }
 
