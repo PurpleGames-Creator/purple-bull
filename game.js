@@ -281,17 +281,19 @@ class BullGame {
     const padding = 2;
     const size = this.cellSize - padding * 2;
 
-    // 頭を bull.png で描画
-    const head = this.snake[0];
-    const hx = head.col * this.cellSize + padding;
-    const hy = head.row * this.cellSize + padding;
+    // 蛇の全セグメントを bull.png で描画
+    for (let i = 0; i < this.snake.length; i++) {
+      const seg = this.snake[i];
+      const x = seg.col * this.cellSize + padding;
+      const y = seg.row * this.cellSize + padding;
 
-    if (this.bullImage && this.bullImage.complete) {
-      ctx.drawImage(this.bullImage, hx, hy, size, size);
-    } else {
-      // フォールバック：画像読み込み中の場合は紫色で表示
-      ctx.fillStyle = '#A855F7';
-      ctx.fillRect(hx, hy, size, size);
+      if (this.bullImage && this.bullImage.complete) {
+        ctx.drawImage(this.bullImage, x, y, size, size);
+      } else {
+        // フォールバック：画像読み込み中の場合は紫色で表示
+        ctx.fillStyle = '#A855F7';
+        ctx.fillRect(x, y, size, size);
+      }
     }
   }
 
@@ -345,6 +347,7 @@ class BullGame {
       } else {
         this._playMeatSound();
         this.score++;
+        this.skipPopCount = 1;
       }
       if (this.scoreEl) this.scoreEl.textContent = String(this.score).padStart(4, '0');
 
