@@ -110,10 +110,11 @@ class BullGame {
   }
 
   _getRotationAngle(dir) {
-    if (dir.dc === 1) return 0;
-    if (dir.dc === -1) return Math.PI;
-    if (dir.dr === 1) return Math.PI / 2;
-    if (dir.dr === -1) return -Math.PI / 2;
+    // bull.png は上向きの画像（上に進む時が基準）
+    if (dir.dr === -1) return 0;           // 上：0度（回転なし）
+    if (dir.dc === 1) return Math.PI / 2;  // 右：90度（時計回り）
+    if (dir.dr === 1) return Math.PI;      // 下：180度
+    if (dir.dc === -1) return -Math.PI / 2; // 左：-90度（反時計回り）
     return 0;
   }
 
