@@ -27,6 +27,9 @@ class BullGame {
     this._lastBodyRotates = []; // 各セグメントの前フレーム回転角度
     this.audioContext = null;
     this.skipPopCount = 0; // 特別な肉で snake を成長させるカウント
+    this._snakeSet = null; // snakeの占有マスをキャッシュ
+    this._lastSnakeLength = 0; // キャッシュの有効性チェック用
+    this._lastSnake = []; // 前フレームのsnake位置（差分レンダリング用）
   }
 
   start() {
@@ -186,7 +189,18 @@ class BullGame {
   }
 
   _placeMeat() {
-    const snakeSet = new Set(this.snake.map(s => s.row * this.GRID_COLS + s.col));
+    // snakeSetをキャッシュ：snake長が変わったときのみ再生成
+    const snakeLength = this.snake.length;
+    if (!this._snakeSet || this._lastSnakeLength !== snakeLength) {
+      this._snakeSet = new Set();
+      for (let i = 0; i < snakeLength; i++) {
+        const s = this.snake[i];
+        this._snakeSet.add(s.row * this.GRID_COLS + s.col);
+      }
+      this._lastSnakeLength = snakeLength;
+    }
+    const snakeSet = this._snakeSet;
+
     const totalCells = this.GRID_ROWS * this.GRID_COLS;
     const snakeCells = this.snake.length;
 
@@ -251,11 +265,18 @@ class BullGame {
   }
 
   _renderBody() {
+    // スネークの初期化時は全セグメント更新
+    const shouldRenderAll = this._lastSnake.length !== this.snake.length;
+
     for (let i = 1; i < this.snake.length; i++) {
       const { row, col } = this.snake[i];
       const cellEl = this.cells[row][col];
       const poolIdx = i - 1;
       const isNew = poolIdx >= this._bodyPool.length;
+
+      // 前フレームの位置をチェック（差分判定）
+      const lastPos = this._lastSnake[i];
+      const posChanged = !lastPos || lastPos.row !== row || lastPos.col !== col;
 
       if (isNew) {
         const el = document.createElement('div');
@@ -265,43 +286,50 @@ class BullGame {
         this._lastBodyRotates[poolIdx] = 0;
       }
 
-      const el = this._bodyPool[poolIdx];
-      const needsInit = !el.dataset.placed;
-      let bodyRotate = this._segmentRotateDeg(i);
+      // 位置が変わったセグメント、新規セグメント、またはサイズ変更時のみ更新
+      if (shouldRenderAll || posChanged || isNew) {
+        const el = this._bodyPool[poolIdx];
+        const needsInit = !el.dataset.placed;
+        let bodyRotate = this._segmentRotateDeg(i);
 
-      // 前フレームからの最短経路回転を計算
-      if (!needsInit) {
-        const lastRotate = this._lastBodyRotates[poolIdx] || 0;
-        const diff = bodyRotate - lastRotate;
-        if (diff > 180) {
-          bodyRotate -= 360;
-        } else if (diff < -180) {
-          bodyRotate += 360;
+        // 前フレームからの最短経路回転を計算
+        if (!needsInit) {
+          const lastRotate = this._lastBodyRotates[poolIdx] || 0;
+          const diff = bodyRotate - lastRotate;
+          if (diff > 180) {
+            bodyRotate -= 360;
+          } else if (diff < -180) {
+            bodyRotate += 360;
+          }
         }
-      }
-      this._lastBodyRotates[poolIdx] = bodyRotate;
+        this._lastBodyRotates[poolIdx] = bodyRotate;
 
-      if (needsInit) {
-        el.style.transition = 'none';
-        el.style.width  = cellEl.offsetWidth  + 'px';
-        el.style.height = cellEl.offsetHeight + 'px';
-        el.dataset.placed = '1';
-      }
+        if (needsInit) {
+          el.style.transition = 'none';
+          el.style.width  = cellEl.offsetWidth  + 'px';
+          el.style.height = cellEl.offsetHeight + 'px';
+          el.dataset.placed = '1';
+        }
 
-      el.style.display = '';
-      const x = cellEl.offsetLeft;
-      const y = cellEl.offsetTop;
-      el.style.transform = `translate(${x}px, ${y}px) rotate(${bodyRotate}deg)`;
+        el.style.display = '';
+        const x = cellEl.offsetLeft;
+        const y = cellEl.offsetTop;
+        el.style.transform = `translate(${x}px, ${y}px) rotate(${bodyRotate}deg)`;
 
-      if (needsInit) {
-        el.getBoundingClientRect(); // force reflow
-        el.style.removeProperty('transition');
+        if (needsInit) {
+          el.getBoundingClientRect(); // force reflow
+          el.style.removeProperty('transition');
+        }
       }
     }
 
+    // 使用していないセグメントを非表示に
     for (let i = this.snake.length - 1; i < this._bodyPool.length; i++) {
       this._bodyPool[i].style.display = 'none';
     }
+
+    // 前フレームのsnakeをキャッシュ（次フレームの差分判定用）
+    this._lastSnake = this.snake.map(seg => ({ row: seg.row, col: seg.col }));
   }
 
   _segmentRotateDeg(i) {
@@ -433,19 +461,30 @@ class BullGame {
       }
       if (this.scoreEl) this.scoreEl.textContent = this.score;
 
-      // 速度上げの処理を次のフレームで実行（メインスレッドのブロッキング回避）
-      // 通常の肉：-3ms、特別な肉：-9ms、上限260ms
-      if (this.TICK > 260) {
-        requestAnimationFrame(() => {
-          const speedDecrease = ateSpecial ? 9 : 3;
-          this.TICK -= speedDecrease;
-          if (this.TICK < 260) {
-            this.TICK = 260; // 上限260msで固定
+      // スコア30未満：速度を上げる（難易度上昇）
+      // スコア30以上：速度を下げる（処理負荷軽減でカクつき防止）
+      requestAnimationFrame(() => {
+        if (this.score < 30) {
+          // 従来のロジック：TICK削減で高速化
+          if (this.TICK > 260) {
+            const speedDecrease = ateSpecial ? 9 : 3;
+            this.TICK -= speedDecrease;
+            if (this.TICK < 260) {
+              this.TICK = 260; // 下限260msで固定
+            }
           }
-          clearInterval(this.timerId);
-          this.timerId = setInterval(() => this._tick(), this.TICK);
-        });
-      }
+        } else {
+          // スコア30以上：TICK増加で低速化し処理負荷を軽減
+          const speedIncrease = ateSpecial ? 9 : 3;
+          this.TICK += speedIncrease;
+          const maxTICK = 500; // 上限500ms
+          if (this.TICK > maxTICK) {
+            this.TICK = maxTICK;
+          }
+        }
+        clearInterval(this.timerId);
+        this.timerId = setInterval(() => this._tick(), this.TICK);
+      });
 
       this._placeMeat();
     } else {
