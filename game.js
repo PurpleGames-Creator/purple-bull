@@ -431,12 +431,20 @@ class BullGame {
 
     // 壁衝突
     if (next.row < 0 || next.row >= this.GRID_ROWS || next.col < 0 || next.col >= this.GRID_COLS) {
+      // 衝突位置に頭を移動させて半分めり込ませる
+      this.snake.unshift(next);
+      this._updateSnakeVisualTargets();
+      this._render();
       this._startGameOverWithSound('kabe.mp3'); return;
     }
 
     // 自己衝突（テールは今フレームで抜けるので除外）
     const lastIdx = this.snake.length - 1;
     if (this.snake.some((s, i) => i !== lastIdx && s.row === next.row && s.col === next.col)) {
+      // 衝突位置に頭を移動させて半分めり込ませる
+      this.snake.unshift(next);
+      this._updateSnakeVisualTargets();
+      this._render();
       this._startGameOverWithSound('dosu.mp3'); return;
     }
 
