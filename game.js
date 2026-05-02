@@ -213,9 +213,9 @@ class BullGame {
     // 特別な肉の出現確率：スコアに応じて変更
     let isSpecial = false;
     if (this.score <= 20) {
-      isSpecial = Math.random() < 0.25; // 1/4 の確率
-    } else if (this.score <= 50) {
-      isSpecial = Math.random() < 0.2;  // 1/5 の確率
+      isSpecial = Math.random() < (1/3); // 1/3 の確率
+    } else {
+      isSpecial = Math.random() < 0.2;  // 1/5 の確率（21以降）
     }
 
     // ランダム試行で肉配置（見つからなければ肉なし状態のまま）
