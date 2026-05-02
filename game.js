@@ -7,6 +7,13 @@ class BullGame {
     this.scoreEl  = scoreEl;
     this.nickname = nickname;
 
+    // Canvas 初期化
+    this.canvas = this.fieldEl;
+    this.ctx = this.canvas.getContext('2d');
+    this.canvasWidth = this.canvas.width;
+    this.canvasHeight = this.canvas.height;
+    this.cellSize = this.canvasWidth / this.GRID_COLS;
+
     this.cells    = [];   // cells[row][col] = HTMLElement
     this.snake    = [];   // [{row, col}, ...] head は index 0
     this.dir      = { dr: 0, dc: 1 };
@@ -156,26 +163,30 @@ class BullGame {
   // ---- private ----
 
   _buildGrid() {
-    this.fieldEl.innerHTML = '';
-    this.cells = [];
     this._firstRender = true;
-    const frag = document.createDocumentFragment();
-    for (let r = 0; r < this.GRID_ROWS; r++) {
-      this.cells[r] = [];
-      for (let c = 0; c < this.GRID_COLS; c++) {
-        const el = document.createElement('div');
-        el.className = 'cell ' + ((r + c) % 2 === 0 ? 'cell--grass' : 'cell--grass-b');
-        this.cells[r][c] = el;
-        frag.appendChild(el);
-      }
-    }
-    this.fieldEl.appendChild(frag);
-
+    this._drawBackground();
     this._bodyPool = [];
+  }
 
-    this.headEl = document.createElement('div');
-    this.headEl.className = 'snake-head';
-    this.fieldEl.appendChild(this.headEl);
+  _drawBackground() {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#90EE90';
+    ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= this.GRID_COLS; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * this.cellSize, 0);
+      ctx.lineTo(i * this.cellSize, this.canvasHeight);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= this.GRID_ROWS; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, i * this.cellSize);
+      ctx.lineTo(this.canvasWidth, i * this.cellSize);
+      ctx.stroke();
+    }
   }
 
   _placeSnake() {
@@ -233,146 +244,74 @@ class BullGame {
   }
 
   _render() {
-    // 前フレームの肉クラスを削除
-    if (this._lastMeatPos) {
-      const el = this.cells[this._lastMeatPos.row][this._lastMeatPos.col];
-      el.classList.remove('cell--meat', 'cell--meat-special');
-    }
-
-    // 新しい肉を表示
-    if (this.meat && this.cells[this.meat.row] && this.cells[this.meat.row][this.meat.col]) {
-      const meatClass = this.meat.isSpecial ? 'cell--meat-special' : 'cell--meat';
-      this.cells[this.meat.row][this.meat.col].classList.add(meatClass);
-      this._lastMeatPos = { row: this.meat.row, col: this.meat.col, isSpecial: this.meat.isSpecial };
-    } else {
-      this._lastMeatPos = null;
-    }
-
-    // 頭と体を絶対配置要素で描画
-    this._moveHead();
-    this._renderBody();
+    this._drawBackground();
+    this._drawMeat();
+    this._drawSnake();
   }
 
-  _renderBody() {
-    // スネークの初期化時は全セグメント更新
-    const shouldRenderAll = this._lastSnake.length !== this.snake.length;
+  _drawMeat() {
+    if (!this.meat) return;
 
+    const ctx = this.ctx;
+    const padding = 2;
+    const size = this.cellSize - padding * 2;
+    const x = this.meat.col * this.cellSize + padding;
+    const y = this.meat.row * this.cellSize + padding;
+    const radius = size / 2;
+
+    // 肉の色
+    if (this.meat.isSpecial) {
+      ctx.fillStyle = '#FFD700';
+    } else {
+      ctx.fillStyle = '#FF4500';
+    }
+
+    ctx.beginPath();
+    ctx.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ハイライト
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.arc(x + size * 0.3, y + size * 0.3, size * 0.15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  _drawSnake() {
+    const ctx = this.ctx;
+    const padding = 2;
+    const size = this.cellSize - padding * 2;
+
+    // 体を描画
     for (let i = 1; i < this.snake.length; i++) {
-      const { row, col } = this.snake[i];
-      const cellEl = this.cells[row][col];
-      const poolIdx = i - 1;
-      const isNew = poolIdx >= this._bodyPool.length;
+      const seg = this.snake[i];
+      const x = seg.col * this.cellSize + padding;
+      const y = seg.row * this.cellSize + padding;
 
-      // 前フレームの位置をチェック（差分判定）
-      const lastPos = this._lastSnake[i];
-      const posChanged = !lastPos || lastPos.row !== row || lastPos.col !== col;
-
-      if (isNew) {
-        const el = document.createElement('div');
-        el.className = 'snake-body';
-        this.fieldEl.insertBefore(el, this.headEl);
-        this._bodyPool.push(el);
-        this._lastBodyRotates[poolIdx] = 0;
-      }
-
-      // 位置が変わったセグメント、新規セグメント、またはサイズ変更時のみ更新
-      if (shouldRenderAll || posChanged || isNew) {
-        const el = this._bodyPool[poolIdx];
-        const needsInit = !el.dataset.placed;
-        let bodyRotate = this._segmentRotateDeg(i);
-
-        // 前フレームからの最短経路回転を計算
-        if (!needsInit) {
-          const lastRotate = this._lastBodyRotates[poolIdx] || 0;
-          const diff = bodyRotate - lastRotate;
-          if (diff > 180) {
-            bodyRotate -= 360;
-          } else if (diff < -180) {
-            bodyRotate += 360;
-          }
-        }
-        this._lastBodyRotates[poolIdx] = bodyRotate;
-
-        if (needsInit) {
-          el.style.transition = 'none';
-          el.style.width  = cellEl.offsetWidth  + 'px';
-          el.style.height = cellEl.offsetHeight + 'px';
-          el.dataset.placed = '1';
-        }
-
-        el.style.display = '';
-        const x = cellEl.offsetLeft;
-        const y = cellEl.offsetTop;
-        el.style.transform = `translate(${x}px, ${y}px) rotate(${bodyRotate}deg)`;
-
-        if (needsInit) {
-          el.getBoundingClientRect(); // force reflow
-          el.style.removeProperty('transition');
-        }
-      }
+      ctx.fillStyle = '#4169E1';
+      ctx.fillRect(x, y, size, size);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, size, size);
     }
 
-    // 使用していないセグメントを非表示に
-    for (let i = this.snake.length - 1; i < this._bodyPool.length; i++) {
-      this._bodyPool[i].style.display = 'none';
-    }
+    // 頭を描画
+    const head = this.snake[0];
+    const hx = head.col * this.cellSize + padding;
+    const hy = head.row * this.cellSize + padding;
 
-    // 前フレームのsnakeをキャッシュ（次フレームの差分判定用）
-    this._lastSnake = this.snake.map(seg => ({ row: seg.row, col: seg.col }));
+    ctx.fillStyle = '#1E90FF';
+    ctx.fillRect(hx, hy, size, size);
+
+    // 目を描画
+    ctx.fillStyle = 'white';
+    const eyeSize = size * 0.2;
+    const eyeOffset = size * 0.2;
+    ctx.beginPath();
+    ctx.arc(hx + eyeOffset + eyeSize / 2, hy + eyeOffset + eyeSize / 2, eyeSize / 2, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  _segmentRotateDeg(i) {
-    // セグメント i は iフレーム前の移動方向で描画
-    const targetMoveDir = this.moveDirHistory[i - 1];
-    if (!targetMoveDir) return 0;
-
-    const { dr, dc } = targetMoveDir;
-    if (dc === 1)  return 90;
-    if (dc === -1) return 270;
-    if (dr === 1)  return 180;
-    return 0;
-  }
-
-  _moveHead() {
-    const { row, col } = this.snake[0];
-    const cellEl = this.cells[row][col];
-    const h = this.headEl;
-    let headRotate = this._headRotateDeg();
-
-    // 前フレームからの最短経路回転を計算
-    if (!this._firstRender) {
-      const diff = headRotate - this._lastHeadRotate;
-      if (diff > 180) {
-        headRotate -= 360;
-      } else if (diff < -180) {
-        headRotate += 360;
-      }
-    }
-    this._lastHeadRotate = headRotate;
-
-    const x = cellEl.offsetLeft;
-    const y = cellEl.offsetTop;
-
-    if (this._firstRender) {
-      h.style.transition = 'none';
-      h.style.width  = cellEl.offsetWidth  + 'px';
-      h.style.height = cellEl.offsetHeight + 'px';
-      h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
-      h.getBoundingClientRect(); // force reflow
-      h.style.removeProperty('transition');
-      this._firstRender = false;
-    } else {
-      h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
-    }
-  }
-
-  _headRotateDeg() {
-    const { dr, dc } = this.dir;
-    if (dc === 1)  return 90;    // right
-    if (dc === -1) return 270;   // left
-    if (dr === 1)  return 180;   // down
-    return 0;                    // up
-  }
 
   _startGameOverWithSound(soundFile) {
     clearInterval(this.timerId);
@@ -386,28 +325,6 @@ class BullGame {
     setTimeout(() => {
       this._playSound('ushi.mp3');
     }, 400);
-
-    // 衝突直後に蛇の頭を現在位置で正確に描画
-    const cellEl = this.cells[this.snake[0].row][this.snake[0].col];
-    const h = this.headEl;
-    const x = cellEl.offsetLeft;
-    const y = cellEl.offsetTop;
-    const headRotate = this._headRotateDeg();
-
-    // 一度、アニメーションなしで正確な位置に配置
-    h.style.transition = 'none';
-    h.style.transform = `translate(${x}px, ${y}px) rotate(${headRotate}deg)`;
-
-    // 次フレームでアニメーション開始（衝突方向へ半セル進む）
-    requestAnimationFrame(() => {
-      const cellW = cellEl.offsetWidth;
-      const cellH = cellEl.offsetHeight;
-      const crashX = x + this.dir.dc * cellW * 0.5;
-      const crashY = y + this.dir.dr * cellH * 0.5;
-      h.style.transition = 'transform 0.12s ease-out';
-      h.style.transform = `translate(${crashX}px, ${crashY}px) rotate(${headRotate}deg)`;
-      h.classList.add('snake-head--crash');
-    });
 
     setTimeout(() => this._gameOver(), 2000);
   }
