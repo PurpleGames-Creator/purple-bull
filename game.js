@@ -218,8 +218,8 @@ class BullGame {
       isSpecial = Math.random() < 0.2;  // 1/5 の確率
     }
 
-    // ランダム試行で高速化（100回に増やして成功率UP）
-    for (let attempts = 0; attempts < 100; attempts++) {
+    // ランダム試行で高速化（200回に増やしてフォールバック頻度削減）
+    for (let attempts = 0; attempts < 200; attempts++) {
       const r = Math.floor(Math.random() * this.GRID_ROWS);
       const c = Math.floor(Math.random() * this.GRID_COLS);
       if (!snakeSet.has(r * this.GRID_COLS + c)) {
