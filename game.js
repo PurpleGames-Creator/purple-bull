@@ -342,19 +342,30 @@ class BullGame {
     const x = this.meat.col * this.cellSize;
     const y = this.meat.row * this.cellSize;
 
-    // 特別な肉の場合は背景を黄色で塗る＋ネオン効果
+    // 特別な肉の場合は背景を金色で塗る＋豪華なネオン効果
     if (this.meat.isSpecial) {
-      ctx.fillStyle = '#FFD700';
-      ctx.fillRect(x, y, this.cellSize, this.cellSize);
-
-      // ネオン光輝効果（脈動するグロー）
       const glowIntensity = Math.sin(Date.now() / 200) * 0.5 + 0.5; // 0-1 で脈動
-      ctx.shadowColor = `rgba(255, 215, 0, ${glowIntensity * 0.8})`;
-      ctx.shadowBlur = 15 * glowIntensity;
+
+      // 外側の大きなグロー（深い金色）
+      ctx.shadowColor = `rgba(255, 165, 0, ${glowIntensity * 0.6})`;
+      ctx.shadowBlur = 25 * glowIntensity;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
+      ctx.fillStyle = '#FFB300';
+      ctx.fillRect(x, y, this.cellSize, this.cellSize);
+
+      // 中層のグロー（明るい金色）
+      ctx.shadowColor = `rgba(255, 200, 0, ${glowIntensity * 0.7})`;
+      ctx.shadowBlur = 15 * glowIntensity;
       ctx.fillStyle = '#FFD700';
       ctx.fillRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+
+      // 内側のグロー（最も明るい）
+      ctx.shadowColor = `rgba(255, 255, 100, ${glowIntensity * 0.5})`;
+      ctx.shadowBlur = 8 * glowIntensity;
+      ctx.fillStyle = '#FFED4E';
+      ctx.fillRect(x + 4, y + 4, this.cellSize - 8, this.cellSize - 8);
+
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
     }
