@@ -37,6 +37,12 @@ class BullGame {
     this._snakeSet = null; // snakeの占有マスをキャッシュ
     this._lastSnakeLength = 0; // キャッシュの有効性チェック用
     this._lastSnake = []; // 前フレームのsnake位置（差分レンダリング用）
+
+    // アニメーション関連プロパティ
+    this._animationId = null;
+    this._snakeVisuals = [];
+    this._lastTickTime = Date.now();
+    this._tickProgress = 0;
   }
 
   start() {
@@ -44,12 +50,71 @@ class BullGame {
     this._loadBullImage();
     this._placeSnake();
     this._placeMeat();
+    this._initSnakeVisuals();
     this._render();
     this.running = true;
     this.timerId = setInterval(() => this._tick(), this.TICK);
+    this._startAnimationLoop();
 
     this._preloadSounds();
     this._initBGM();
+  }
+
+  _initSnakeVisuals() {
+    this._snakeVisuals = this.snake.map(seg => ({
+      row: seg.row,
+      col: seg.col,
+      targetRow: seg.row,
+      targetCol: seg.col,
+    }));
+  }
+
+  _startAnimationLoop() {
+    const loop = () => {
+      const elapsed = Date.now() - this._lastTickTime;
+      this._tickProgress = Math.min(1, elapsed / this.TICK);
+
+      this._updateSnakeVisuals();
+      this._render();
+
+      this._animationId = requestAnimationFrame(loop);
+    };
+    this._animationId = requestAnimationFrame(loop);
+  }
+
+  _updateSnakeVisuals() {
+    const t = this._tickProgress;
+    for (let i = 0; i < this._snakeVisuals.length; i++) {
+      const visual = this._snakeVisuals[i];
+      visual.row = visual.targetRow - (visual.targetRow - visual.row) * (1 - t);
+      visual.col = visual.targetCol - (visual.targetCol - visual.col) * (1 - t);
+    }
+  }
+
+  _updateSnakeVisualTargets() {
+    for (let i = 0; i < this.snake.length; i++) {
+      if (!this._snakeVisuals[i]) {
+        this._snakeVisuals.push({
+          row: this.snake[i].row,
+          col: this.snake[i].col,
+          targetRow: this.snake[i].row,
+          targetCol: this.snake[i].col,
+        });
+      }
+      this._snakeVisuals[i].targetRow = this.snake[i].row;
+      this._snakeVisuals[i].targetCol = this.snake[i].col;
+    }
+    if (this._snakeVisuals.length > this.snake.length) {
+      this._snakeVisuals.pop();
+    }
+  }
+
+  _getRotationAngle(dir) {
+    if (dir.dc === 1) return 0;
+    if (dir.dc === -1) return Math.PI;
+    if (dir.dr === 1) return Math.PI / 2;
+    if (dir.dr === -1) return -Math.PI / 2;
+    return 0;
   }
 
   _loadBullImage() {
@@ -134,6 +199,9 @@ class BullGame {
 
   destroy() {
     clearInterval(this.timerId);
+    if (this._animationId) {
+      cancelAnimationFrame(this._animationId);
+    }
     this.running = false;
 
     if (this.bgm) {
@@ -281,19 +349,33 @@ class BullGame {
     const padding = 2;
     const size = this.cellSize - padding * 2;
 
-    // 蛇の全セグメントを bull.png で描画
-    for (let i = 0; i < this.snake.length; i++) {
-      const seg = this.snake[i];
-      const x = seg.col * this.cellSize + padding;
-      const y = seg.row * this.cellSize + padding;
+    // 蛇の全セグメントを bull.png で描画（補間位置と回転適用）
+    for (let i = 0; i < this._snakeVisuals.length; i++) {
+      if (!this._snakeVisuals[i]) continue;
+
+      const visual = this._snakeVisuals[i];
+      const pixelRow = Math.round(visual.row * this.cellSize);
+      const pixelCol = Math.round(visual.col * this.cellSize);
+      const x = pixelCol + padding;
+      const y = pixelRow + padding;
+
+      // 向きを取得
+      const dir = this.moveDirHistory[i] || this.nextDir;
+      const rotation = this._getRotationAngle(dir);
+
+      ctx.save();
+      ctx.translate(x + size / 2, y + size / 2);
+      ctx.rotate(rotation);
 
       if (this.bullImage && this.bullImage.complete) {
-        ctx.drawImage(this.bullImage, x, y, size, size);
+        ctx.drawImage(this.bullImage, -size / 2, -size / 2, size, size);
       } else {
         // フォールバック：画像読み込み中の場合は紫色で表示
         ctx.fillStyle = '#A855F7';
-        ctx.fillRect(x, y, size, size);
+        ctx.fillRect(-size / 2, -size / 2, size, size);
       }
+
+      ctx.restore();
     }
   }
 
@@ -394,6 +476,11 @@ class BullGame {
     if (this.moveDirHistory.length > this.GRID_ROWS * this.GRID_COLS) {
       this.moveDirHistory.pop();
     }
+
+    // アニメーション用：視覚位置ターゲット更新
+    this._updateSnakeVisualTargets();
+    this._lastTickTime = Date.now();
+    this._tickProgress = 0;
   }
 
   _gameOver() {
