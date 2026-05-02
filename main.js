@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const BEST_KEY = 'purpleBullBest';
 
+  // スコアを等幅表示用にパディング（4文字以上、位置が動かない）
+  const formatScore = (score) => String(score).padStart(4, '0');
+
   let currentGame = null;
   let lastNickname = null;
   let gameoverAnimId = null;
@@ -40,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ベストスコア表示更新
   const updateBestDisplay = () => {
     const best = Number(localStorage.getItem(BEST_KEY) || '0');
-    if (bestEl) bestEl.textContent = best;
+    if (bestEl) bestEl.textContent = formatScore(best);
   };
   updateBestDisplay();
 
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentGame) { currentGame.destroy(); currentGame = null; }
 
     lastNickname = nickname;
-    scoreEl.textContent = '1';
+    scoreEl.textContent = formatScore(1);
     updateBestDisplay();
 
     if (swipeHint) swipeHint.style.opacity = '1';

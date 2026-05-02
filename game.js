@@ -457,7 +457,7 @@ class BullGame {
         this._playMeatSound();
         this.score++;
       }
-      if (this.scoreEl) this.scoreEl.textContent = this.score;
+      if (this.scoreEl) this.scoreEl.textContent = String(this.score).padStart(4, '0');
 
       // スコア30未満：速度を上げる（難易度上昇）
       // スコア30以上：速度を下げる（処理負荷軽減でカクつき防止）
