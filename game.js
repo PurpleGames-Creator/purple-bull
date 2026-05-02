@@ -515,7 +515,7 @@ class BullGame {
         this.score++;
         this.skipPopCount = 1;
       }
-      if (this.scoreEl) this.scoreEl.textContent = String(this.score).padStart(4, '0');
+      if (this.scoreEl) this.scoreEl.textContent = String(this.score);
 
       // スコア30未満：速度を上げる（難易度上昇）
       // スコア30以上：速度を下げる（処理負荷軽減でカクつき防止）

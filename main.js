@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const BEST_KEY = 'purpleBullBest';
 
-  // スコアを等幅表示用にパディング（3文字、位置が動かない）
-  const formatScore = (score) => String(score).padStart(3, '0');
+  // スコアをそのまま表示（千の位の0を削除）
+  const formatScore = (score) => String(score);
 
   let currentGame = null;
   let lastNickname = null;
