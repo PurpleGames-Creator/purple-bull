@@ -246,9 +246,9 @@ class BullGame {
   _drawBackground() {
     const ctx = this.ctx;
 
-    // 市松模様の背景（緑色と深い緑色）
+    // 市松模様の背景（明るい黄緑色）
     const lightGreen = '#90EE90';
-    const darkGreen = '#2d5016';
+    const darkGreen = '#7FD76F';
 
     for (let row = 0; row < this.GRID_ROWS; row++) {
       for (let col = 0; col < this.GRID_COLS; col++) {
@@ -550,8 +550,8 @@ class BullGame {
   _playSpecialMeatSound() {
     // 特別肉用の音：通常の肉の音を素早く3連続で鳴らす
     const delay1 = 0;
-    const delay2 = 0.15;
-    const delay3 = 0.3;
+    const delay2 = 0.08;
+    const delay3 = 0.16;
 
     this._playMeatSoundWithDelay(delay1);
     this._playMeatSoundWithDelay(delay2);
