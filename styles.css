@@ -43,7 +43,7 @@ body {
 
 #app {
   width: 100%;
-  max-width: 520px;
+  max-width: 90vw;
   min-height: 100vh;
   padding: 12px 12px 18px;
   display: flex;
@@ -328,7 +328,7 @@ body {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 1px;
-  width: min(90vw, 360px);
+  width: min(90vw, 500px);
   aspect-ratio: 3 / 5;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
