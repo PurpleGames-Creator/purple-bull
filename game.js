@@ -512,8 +512,8 @@ class BullGame {
         this.skipPopCount = 2;
       } else {
         this._playMeatSound();
-        this.score++;
-        this.skipPopCount = 1;
+        this.score++;  // unshift(1) + skipPopCount(0) = 1マス成長
+        this.skipPopCount = 0;
       }
       if (this.scoreEl) this.scoreEl.textContent = String(this.score);
 
