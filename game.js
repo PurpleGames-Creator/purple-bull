@@ -41,6 +41,7 @@ class BullGame {
 
   start() {
     this._buildGrid();
+    this._loadBullImage();
     this._placeSnake();
     this._placeMeat();
     this._render();
@@ -49,6 +50,11 @@ class BullGame {
 
     this._preloadSounds();
     this._initBGM();
+  }
+
+  _loadBullImage() {
+    this.bullImage = new Image();
+    this.bullImage.src = './bull.png';
   }
 
   _initBGM() {
@@ -253,28 +259,21 @@ class BullGame {
     if (!this.meat) return;
 
     const ctx = this.ctx;
-    const padding = 2;
-    const size = this.cellSize - padding * 2;
-    const x = this.meat.col * this.cellSize + padding;
-    const y = this.meat.row * this.cellSize + padding;
-    const radius = size / 2;
+    const x = this.meat.col * this.cellSize;
+    const y = this.meat.row * this.cellSize;
 
-    // 肉の色
+    // 特別な肉の場合は背景を黄色で塗る
     if (this.meat.isSpecial) {
       ctx.fillStyle = '#FFD700';
-    } else {
-      ctx.fillStyle = '#FF4500';
+      ctx.fillRect(x, y, this.cellSize, this.cellSize);
     }
 
-    ctx.beginPath();
-    ctx.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ハイライト
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.beginPath();
-    ctx.arc(x + size * 0.3, y + size * 0.3, size * 0.15, 0, Math.PI * 2);
-    ctx.fill();
+    // 肉の絵文字を描画
+    ctx.fillStyle = '#000';
+    ctx.font = `${this.cellSize * 0.7}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🥩', x + this.cellSize / 2, y + this.cellSize / 2);
   }
 
   _drawSnake() {
@@ -282,34 +281,18 @@ class BullGame {
     const padding = 2;
     const size = this.cellSize - padding * 2;
 
-    // 体を描画
-    for (let i = 1; i < this.snake.length; i++) {
-      const seg = this.snake[i];
-      const x = seg.col * this.cellSize + padding;
-      const y = seg.row * this.cellSize + padding;
-
-      ctx.fillStyle = '#4169E1';
-      ctx.fillRect(x, y, size, size);
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, size, size);
-    }
-
-    // 頭を描画
+    // 頭を bull.png で描画
     const head = this.snake[0];
     const hx = head.col * this.cellSize + padding;
     const hy = head.row * this.cellSize + padding;
 
-    ctx.fillStyle = '#1E90FF';
-    ctx.fillRect(hx, hy, size, size);
-
-    // 目を描画
-    ctx.fillStyle = 'white';
-    const eyeSize = size * 0.2;
-    const eyeOffset = size * 0.2;
-    ctx.beginPath();
-    ctx.arc(hx + eyeOffset + eyeSize / 2, hy + eyeOffset + eyeSize / 2, eyeSize / 2, 0, Math.PI * 2);
-    ctx.fill();
+    if (this.bullImage && this.bullImage.complete) {
+      ctx.drawImage(this.bullImage, hx, hy, size, size);
+    } else {
+      // フォールバック：画像読み込み中の場合は紫色で表示
+      ctx.fillStyle = '#A855F7';
+      ctx.fillRect(hx, hy, size, size);
+    }
   }
 
 
