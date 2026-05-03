@@ -46,6 +46,9 @@ class BullGame {
 
     // 一時停止フラグ
     this.isPaused = false;
+
+    // 倍速フラグ
+    this.isSpeedBoost = false;
   }
 
   start() {
@@ -574,6 +577,10 @@ class BullGame {
 
   togglePause() {
     this.isPaused = !this.isPaused;
+  }
+
+  setSpeedBoost(active) {
+    this.isSpeedBoost = active;
   }
 
   _gameOver() {
