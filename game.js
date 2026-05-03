@@ -111,10 +111,12 @@ class BullGame {
 
   _startAnimationLoop() {
     const loop = () => {
-      const elapsed = Date.now() - this._lastTickTime;
-      this._tickProgress = Math.min(1, elapsed / this.TICK);
+      if (!this.isPaused) {
+        const elapsed = Date.now() - this._lastTickTime;
+        this._tickProgress = Math.min(1, elapsed / this.TICK);
 
-      this._updateSnakeVisuals();
+        this._updateSnakeVisuals();
+      }
       this._render();
 
       this._animationId = requestAnimationFrame(loop);
