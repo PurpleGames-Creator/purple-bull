@@ -353,20 +353,26 @@ document.addEventListener('DOMContentLoaded', () => {
     homeBulls.push(bull);
   };
 
-  heroCanvas.addEventListener('click', (e) => {
-    if (!screenHome.classList.contains('screen--active')) return;
-    const rect = heroCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    createHomeBull(x, y);
-  });
+  let touchDetected = false;
 
   heroCanvas.addEventListener('touchstart', (e) => {
     if (!screenHome.classList.contains('screen--active')) return;
+    touchDetected = true;
     const rect = heroCanvas.getBoundingClientRect();
     const touch = e.touches[0];
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
+    createHomeBull(x, y);
+  });
+
+  heroCanvas.addEventListener('click', (e) => {
+    if (!screenHome.classList.contains('screen--active') || touchDetected) {
+      touchDetected = false;
+      return;
+    }
+    const rect = heroCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     createHomeBull(x, y);
   });
 
