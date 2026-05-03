@@ -589,6 +589,9 @@ class BullGame {
 
   setSpeedBoost(active) {
     this.isSpeedBoost = active;
+    clearInterval(this.timerId);
+    const interval = active ? Math.floor(this.TICK * 2 / 3) : this.TICK;
+    this.timerId = setInterval(() => this._tick(), interval);
   }
 
   _gameOver() {
