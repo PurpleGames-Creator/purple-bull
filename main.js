@@ -254,6 +254,25 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       pauseButton.classList.remove('paused');
     }
+
+    // 効果音再生
+    if (currentGame.audioContext && currentGame.audioContext.state === 'running') {
+      const now = currentGame.audioContext.currentTime;
+      const osc = currentGame.audioContext.createOscillator();
+      const gain = currentGame.audioContext.createGain();
+
+      osc.connect(gain);
+      gain.connect(currentGame.audioContext.destination);
+
+      osc.frequency.value = 1000;
+      osc.type = 'sine';
+
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+      osc.start(now);
+      osc.stop(now + 0.1);
+    }
   });
 
   // キーボード操作
