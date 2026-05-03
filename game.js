@@ -357,12 +357,16 @@ class BullGame {
       return;
     }
 
-    // 特別な肉の出現確率：スコアに応じて変更
-    let isSpecial = false;
-    if (this.score <= 20) {
-      isSpecial = Math.random() < 0.4; // 40% の確率
+    // 肉のタイプを固定確率で決定
+    // normal: 50%, special: 40%, super_special: 10%
+    const rand = Math.random();
+    let type;
+    if (rand < 0.5) {
+      type = 'normal';
+    } else if (rand < 0.9) {
+      type = 'special';
     } else {
-      isSpecial = Math.random() < 0.3; // 30% の確率（21以降）
+      type = 'super_special';
     }
 
     // ランダム試行で肉配置（見つからなければ肉なし状態のまま）
@@ -370,7 +374,7 @@ class BullGame {
       const r = Math.floor(Math.random() * this.GRID_ROWS);
       const c = Math.floor(Math.random() * this.GRID_COLS);
       if (!snakeSet.has(r * this.GRID_COLS + c)) {
-        this.meat = { row: r, col: c, isSpecial };
+        this.meat = { row: r, col: c, type };
         return;
       }
     }
@@ -391,30 +395,57 @@ class BullGame {
     const ctx = this.ctx;
     const x = this.meat.col * this.cellSize;
     const y = this.meat.row * this.cellSize;
+    const type = this.meat.type;
 
-    // 特別な肉の場合は背景を金色で塗る＋豪華なネオン効果
-    if (this.meat.isSpecial) {
+    // 肉のタイプに応じたグロー効果を描画
+    if (type === 'special' || type === 'super_special') {
       const glowIntensity = Math.sin(Date.now() / 200) * 0.5 + 0.5; // 0-1 で脈動
 
-      // 外側の大きなグロー（深い金色）
-      ctx.shadowColor = `rgba(255, 165, 0, ${glowIntensity * 0.6})`;
-      ctx.shadowBlur = 25 * glowIntensity;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-      ctx.fillStyle = '#FFB300';
-      ctx.fillRect(x, y, this.cellSize, this.cellSize);
+      if (type === 'special') {
+        // special: 金色のネオン効果
+        // 外側の大きなグロー（深い金色）
+        ctx.shadowColor = `rgba(255, 165, 0, ${glowIntensity * 0.6})`;
+        ctx.shadowBlur = 25 * glowIntensity;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.fillStyle = '#FFB300';
+        ctx.fillRect(x, y, this.cellSize, this.cellSize);
 
-      // 中層のグロー（明るい金色）
-      ctx.shadowColor = `rgba(255, 200, 0, ${glowIntensity * 0.7})`;
-      ctx.shadowBlur = 15 * glowIntensity;
-      ctx.fillStyle = '#FFD700';
-      ctx.fillRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+        // 中層のグロー（明るい金色）
+        ctx.shadowColor = `rgba(255, 200, 0, ${glowIntensity * 0.7})`;
+        ctx.shadowBlur = 15 * glowIntensity;
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
 
-      // 内側のグロー（最も明るい）
-      ctx.shadowColor = `rgba(255, 255, 100, ${glowIntensity * 0.5})`;
-      ctx.shadowBlur = 8 * glowIntensity;
-      ctx.fillStyle = '#FFED4E';
-      ctx.fillRect(x + 4, y + 4, this.cellSize - 8, this.cellSize - 8);
+        // 内側のグロー（最も明るい）
+        ctx.shadowColor = `rgba(255, 255, 100, ${glowIntensity * 0.5})`;
+        ctx.shadowBlur = 8 * glowIntensity;
+        ctx.fillStyle = '#FFED4E';
+        ctx.fillRect(x + 4, y + 4, this.cellSize - 8, this.cellSize - 8);
+      } else if (type === 'super_special') {
+        // super_special: 虹色＆より強いグロー効果
+        const hue = (Date.now() / 20) % 360; // 虹色がループ
+
+        // 外側の大きなグロー（虹色グロー）
+        ctx.shadowColor = `hsl(${hue}, 100%, 50%, ${glowIntensity * 0.7})`;
+        ctx.shadowBlur = 35 * glowIntensity;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.fillStyle = `hsl(${hue}, 100%, 40%)`;
+        ctx.fillRect(x, y, this.cellSize, this.cellSize);
+
+        // 中層のグロー（明るい虹色）
+        ctx.shadowColor = `hsl(${(hue + 120) % 360}, 100%, 60%, ${glowIntensity * 0.8})`;
+        ctx.shadowBlur = 20 * glowIntensity;
+        ctx.fillStyle = `hsl(${(hue + 120) % 360}, 100%, 50%)`;
+        ctx.fillRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
+
+        // 内側のグロー（最も明るい）
+        ctx.shadowColor = `hsl(${(hue + 240) % 360}, 100%, 70%, ${glowIntensity * 0.6})`;
+        ctx.shadowBlur = 12 * glowIntensity;
+        ctx.fillStyle = `hsl(${(hue + 240) % 360}, 100%, 60%)`;
+        ctx.fillRect(x + 4, y + 4, this.cellSize - 8, this.cellSize - 8);
+      }
 
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
@@ -518,19 +549,29 @@ class BullGame {
     }
 
     const ate = this.meat && next.row === this.meat.row && next.col === this.meat.col;
-    const ateSpecial = ate && this.meat.isSpecial;
+    const meatType = ate ? this.meat.type : null; // 'normal', 'special', or 'super_special'
     this.snake.unshift(next);
     if (ate) {
-      // 特別な肉は専用の音を1回、通常の肉は通常音を1回鳴らす
-      if (ateSpecial) {
-        this._playSpecialMeatSound();
-        this.score += 3;  // unshift(1) + skipPopCount(2) = 3マス成長
-        this.skipPopCount = 2;
-      } else {
+      // 肉のタイプに応じたスコア加算とスキップポップ設定
+      let scoreIncrease = 1;
+      let skipPopIncrease = 0;
+
+      if (meatType === 'normal') {
         this._playMeatSound();
-        this.score++;  // unshift(1) + skipPopCount(0) = 1マス成長
-        this.skipPopCount = 0;
+        scoreIncrease = 1;
+        skipPopIncrease = 0;
+      } else if (meatType === 'special') {
+        this._playSpecialMeatSound();
+        scoreIncrease = 3;
+        skipPopIncrease = 2;
+      } else if (meatType === 'super_special') {
+        this._playSpecialMeatSound();
+        scoreIncrease = 5;
+        skipPopIncrease = 4;
       }
+
+      this.score += scoreIncrease;
+      this.skipPopCount = skipPopIncrease;
       if (this.scoreEl) this.scoreEl.textContent = String(this.score);
 
       // スコア30未満：速度を上げる（難易度上昇）
@@ -538,7 +579,7 @@ class BullGame {
       if (this.score < 30) {
         // 従来のロジック：TICK削減で高速化
         if (this.TICK > 260) {
-          const speedDecrease = ateSpecial ? 9 : 3;
+          const speedDecrease = (meatType === 'super_special') ? 15 : (meatType === 'special') ? 9 : 3;
           this.TICK -= speedDecrease;
           if (this.TICK < 260) {
             this.TICK = 260; // 下限260msで固定
@@ -546,7 +587,7 @@ class BullGame {
         }
       } else {
         // スコア30以上：TICK増加で低速化し処理負荷を軽減
-        const speedIncrease = ateSpecial ? 9 : 3;
+        const speedIncrease = (meatType === 'super_special') ? 15 : (meatType === 'special') ? 9 : 3;
         this.TICK += speedIncrease;
         const maxTICK = 500; // 上限500ms
         if (this.TICK > maxTICK) {
