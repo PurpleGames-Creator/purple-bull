@@ -423,27 +423,25 @@ class BullGame {
         ctx.fillStyle = '#FFED4E';
         ctx.fillRect(x + 4, y + 4, this.cellSize - 8, this.cellSize - 8);
       } else if (type === 'super_special') {
-        // super_special: 虹色＆より強いグロー効果
-        const hue = (Date.now() / 20) % 360; // 虹色がループ
-
-        // 外側の大きなグロー（虹色グロー）
-        ctx.shadowColor = `hsl(${hue}, 100%, 50%, ${glowIntensity * 0.7})`;
-        ctx.shadowBlur = 35 * glowIntensity;
+        // super_special: 赤色＆激しく光輝くネオン効果
+        // 外側の大きなグロー（赤色グロー、最も激しい）
+        ctx.shadowColor = `rgba(255, 0, 0, ${glowIntensity * 0.9})`;
+        ctx.shadowBlur = 40 * glowIntensity;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
-        ctx.fillStyle = `hsl(${hue}, 100%, 40%)`;
+        ctx.fillStyle = '#CC0000';
         ctx.fillRect(x, y, this.cellSize, this.cellSize);
 
-        // 中層のグロー（明るい虹色）
-        ctx.shadowColor = `hsl(${(hue + 120) % 360}, 100%, 60%, ${glowIntensity * 0.8})`;
-        ctx.shadowBlur = 20 * glowIntensity;
-        ctx.fillStyle = `hsl(${(hue + 120) % 360}, 100%, 50%)`;
+        // 中層のグロー（明るい赤色）
+        ctx.shadowColor = `rgba(255, 50, 50, ${glowIntensity * 0.85})`;
+        ctx.shadowBlur = 25 * glowIntensity;
+        ctx.fillStyle = '#FF3333';
         ctx.fillRect(x + 2, y + 2, this.cellSize - 4, this.cellSize - 4);
 
-        // 内側のグロー（最も明るい）
-        ctx.shadowColor = `hsl(${(hue + 240) % 360}, 100%, 70%, ${glowIntensity * 0.6})`;
-        ctx.shadowBlur = 12 * glowIntensity;
-        ctx.fillStyle = `hsl(${(hue + 240) % 360}, 100%, 60%)`;
+        // 内側のグロー（最も明るい赤色）
+        ctx.shadowColor = `rgba(255, 100, 100, ${glowIntensity * 0.8})`;
+        ctx.shadowBlur = 15 * glowIntensity;
+        ctx.fillStyle = '#FF6666';
         ctx.fillRect(x + 4, y + 4, this.cellSize - 8, this.cellSize - 8);
       }
 
