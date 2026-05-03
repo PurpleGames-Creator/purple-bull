@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // キーボード操作
   document.addEventListener('keydown', (e) => {
-    if (currentGame) {
+    if (currentGame && !currentGame.isPaused) {
       switch (e.key) {
         case 'ArrowUp':    e.preventDefault(); currentGame.keyQueue.push({dr: -1, dc: 0}); break;
         case 'ArrowDown':  e.preventDefault(); currentGame.keyQueue.push({dr: 1, dc: 0});  break;
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: true });
 
   document.getElementById('screen-game')?.addEventListener('touchend', (e) => {
-    if (!currentGame) return;
+    if (!currentGame || currentGame.isPaused) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
     if (Math.abs(dx) < SWIPE_MIN && Math.abs(dy) < SWIPE_MIN) return;
