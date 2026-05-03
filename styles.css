@@ -349,6 +349,7 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.05em;
   text-align: center;
+  min-width: 65px;
 }
 
 .game-best-label {

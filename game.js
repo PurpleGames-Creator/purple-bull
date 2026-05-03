@@ -563,7 +563,7 @@ class BullGame {
         scoreIncrease = 3;
         skipPopIncrease = 2;
       } else if (meatType === 'super_special') {
-        this._playSpecialMeatSound();
+        this._playSuperSpecialMeatSound();
         scoreIncrease = 5;
         skipPopIncrease = 4;
       }
@@ -683,6 +683,12 @@ class BullGame {
     this._playMeatSoundWithDelay(delay1);
     this._playMeatSoundWithDelay(delay2);
     this._playMeatSoundWithDelay(delay3);
+  }
+
+  _playSuperSpecialMeatSound() {
+    // 超特別肉用の音：通常の肉の音を素早く5連続で鳴らす（「ポポポポポ」）
+    const delays = [0, 0.05, 0.10, 0.15, 0.20];
+    delays.forEach(delay => this._playMeatSoundWithDelay(delay));
   }
 
   _playMeatSoundWithDelay(delayTime) {
