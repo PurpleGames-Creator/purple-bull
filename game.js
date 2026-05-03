@@ -481,6 +481,11 @@ class BullGame {
   }
 
   _tick() {
+    // 一時停止中は更新をスキップ
+    if (this.isPaused) {
+      return;
+    }
+
     // 倍速時は TICK を 2/3 に調整
     const effectiveTick = this.isSpeedBoost ? Math.floor(this.TICK * 2 / 3) : this.TICK;
 
