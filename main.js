@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bestEl        = document.getElementById('best-value');
   const swipeHint     = document.getElementById('swipe-hint');
   const quitButton    = document.getElementById('quit-button');
+  const pauseButton   = document.getElementById('pause-button');
   const errorBanner   = document.getElementById('error-banner');
 
   const BEST_KEY = 'purpleBullBest';
@@ -240,6 +241,19 @@ document.addEventListener('DOMContentLoaded', () => {
     screenHome.classList.add('screen--active');
     updateBestDisplay();
     loadRankingAfterConnection('today');
+  });
+
+  pauseButton?.addEventListener('click', () => {
+    if (!currentGame) return;
+
+    currentGame.togglePause();
+
+    // UI 状態を切り替え
+    if (currentGame.isPaused) {
+      pauseButton.classList.add('paused');
+    } else {
+      pauseButton.classList.remove('paused');
+    }
   });
 
   // キーボード操作
