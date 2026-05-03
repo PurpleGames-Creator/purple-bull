@@ -43,6 +43,9 @@ class BullGame {
     this._snakeVisuals = [];
     this._lastTickTime = Date.now();
     this._tickProgress = 0;
+
+    // 一時停止フラグ
+    this.isPaused = false;
   }
 
   start() {
@@ -565,6 +568,10 @@ class BullGame {
     this._updateSnakeVisualTargets();
     this._lastTickTime = Date.now();
     this._tickProgress = 0;
+  }
+
+  togglePause() {
+    this.isPaused = !this.isPaused;
   }
 
   _gameOver() {
