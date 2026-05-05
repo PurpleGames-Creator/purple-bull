@@ -2,7 +2,7 @@ class BullGame {
   constructor({ fieldEl, scoreEl, nickname, mode = 'normal' }) {
     this.GRID_COLS = 12;
     this.GRID_ROWS = 20;
-    this.TICK  = mode === 'hard' ? 200 : 300;
+    this.TICK  = 200;  // 常に200msで統一（ハードモード廃止）
     this.fieldEl  = fieldEl;
     this.scoreEl  = scoreEl;
     this.nickname = nickname;
