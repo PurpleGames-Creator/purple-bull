@@ -230,7 +230,7 @@ class BullGame {
   }
 
   _preloadSounds() {
-    const sounds = ['bashi.mp3', 'dosu.mp3', 'paku.mp3', 'kabe.mp3', 'ushi.mp3'];
+    const sounds = ['bashi.mp3', 'dosu.mp3', 'paku.mp3', 'kabe.mp3', 'ushi.mp3', 'poyoyon.mp3'];
     sounds.forEach(filename => {
       const key = filename.replace('.mp3', '');
       if (!this.soundPool[key]) {

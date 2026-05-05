@@ -382,9 +382,21 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const playCharacterSound = () => {
-    const audio = new Audio('./poyoyon.mp3');
-    audio.volume = 0.5;
-    audio.play().catch(err => console.warn('Character sound play failed:', err));
+    // Note: soundPool は currentGame が初期化されて _preloadSounds() が実行された後に利用可能
+    if (currentGame && currentGame.soundPool && currentGame.soundPool['poyoyon']) {
+      const audio = currentGame.soundPool['poyoyon'];
+      audio.currentTime = 0;
+      audio.play().catch(err => console.warn('Character sound play failed:', err));
+    } else {
+      // fallback: soundPool が未初期化の場合
+      try {
+        const audio = new Audio('./poyoyon.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(err => console.warn('Character sound play failed:', err));
+      } catch (e) {
+        console.warn('Sound not available:', e);
+      }
+    }
   };
 
   const createHomeBull = (x, y) => {
