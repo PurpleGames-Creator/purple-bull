@@ -47,9 +47,6 @@ class BullGame {
 
     // 一時停止フラグ
     this.isPaused = false;
-
-    // 倍速フラグ
-    this.isSpeedBoost = false;
   }
 
   start() {
@@ -526,9 +523,6 @@ class BullGame {
       return;
     }
 
-    // 倍速時は TICK を 2/3 に調整
-    const effectiveTick = this.isSpeedBoost ? Math.floor(this.TICK * 2 / 3) : this.TICK;
-
     if (this.keyQueue.length > 0) {
       const direction = this.keyQueue.shift();
       this.setDirection(direction.dr, direction.dc);
@@ -635,13 +629,6 @@ class BullGame {
 
   togglePause() {
     this.isPaused = !this.isPaused;
-  }
-
-  setSpeedBoost(active) {
-    this.isSpeedBoost = active;
-    clearInterval(this.timerId);
-    const interval = active ? Math.floor(this.TICK * 2 / 3) : this.TICK;
-    this.timerId = setInterval(() => this._tick(), interval);
   }
 
   _gameOver() {

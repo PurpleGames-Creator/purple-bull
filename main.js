@@ -101,8 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentGame = null;
   let lastNickname = null;
   let gameoverAnimId = null;
-  let longPressTimer = null;
-  let isLongPressing = false;
 
   // エラー表示
   window.showGameError = (msg) => {
@@ -275,41 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       osc.start(now);
       osc.stop(now + 0.1);
-    }
-  });
-
-  // 長押し検出ロジック
-  gameCanvas?.addEventListener('touchstart', (e) => {
-    if (!screenGame.classList.contains('screen--active') || !currentGame || currentGame.isPaused) return;
-
-    longPressTimer = setTimeout(() => {
-      isLongPressing = true;
-      currentGame.setSpeedBoost(true);
-    }, 500);
-  });
-
-  gameCanvas?.addEventListener('touchend', () => {
-    clearTimeout(longPressTimer);
-    if (isLongPressing) {
-      currentGame.setSpeedBoost(false);
-      isLongPressing = false;
-    }
-  });
-
-  gameCanvas?.addEventListener('mousedown', (e) => {
-    if (!screenGame.classList.contains('screen--active') || !currentGame || currentGame.isPaused) return;
-
-    longPressTimer = setTimeout(() => {
-      isLongPressing = true;
-      currentGame.setSpeedBoost(true);
-    }, 500);
-  });
-
-  gameCanvas?.addEventListener('mouseup', () => {
-    clearTimeout(longPressTimer);
-    if (isLongPressing) {
-      currentGame.setSpeedBoost(false);
-      isLongPressing = false;
     }
   });
 
