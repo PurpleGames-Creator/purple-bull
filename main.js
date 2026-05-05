@@ -384,8 +384,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const playCharacterSound = () => {
     // Note: soundPool は currentGame が初期化されて _preloadSounds() が実行された後に利用可能
     if (currentGame && currentGame.soundPool && currentGame.soundPool['poyoyon']) {
-      const audio = currentGame.soundPool['poyoyon'];
-      audio.currentTime = 0;
+      // cloneNode(true) で毎回新しい Audio 要素を作成（複数回再生に対応）
+      const audio = currentGame.soundPool['poyoyon'].cloneNode(true);
       audio.play().catch(err => console.warn('Character sound play failed:', err));
     } else {
       // fallback: soundPool が未初期化の場合
