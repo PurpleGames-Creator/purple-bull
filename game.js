@@ -1,11 +1,12 @@
 class BullGame {
-  constructor({ fieldEl, scoreEl, nickname }) {
+  constructor({ fieldEl, scoreEl, nickname, mode = 'normal' }) {
     this.GRID_COLS = 12;
     this.GRID_ROWS = 20;
-    this.TICK  = 300;
+    this.TICK  = mode === 'hard' ? 200 : 300;
     this.fieldEl  = fieldEl;
     this.scoreEl  = scoreEl;
     this.nickname = nickname;
+    this.mode = mode;
 
     // Canvas 初期化
     this.canvas = this.fieldEl;
@@ -358,7 +359,6 @@ class BullGame {
     }
 
     // 肉のタイプを固定確率で決定
-    // normal: 50%, special: 40%, super_special: 10%
     const rand = Math.random();
     let type;
     if (rand < 0.5) {
@@ -369,7 +369,7 @@ class BullGame {
       type = 'super_special';
     }
 
-    // ランダム試行で肉配置（見つからなければ肉なし状態のまま）
+    // ステップ1：ランダム試行で肉配置（300回）
     for (let attempts = 0; attempts < 300; attempts++) {
       const r = Math.floor(Math.random() * this.GRID_ROWS);
       const c = Math.floor(Math.random() * this.GRID_COLS);
@@ -379,7 +379,18 @@ class BullGame {
       }
     }
 
-    // フォールバック処理は削除：見つからなければ肉なし状態を許容
+    // ステップ2：フォールバック処理（フィールド全体をスキャン）
+    // ランダム試行で見つからなかった場合、確実に空きマスを見つける
+    for (let r = 0; r < this.GRID_ROWS; r++) {
+      for (let c = 0; c < this.GRID_COLS; c++) {
+        if (!snakeSet.has(r * this.GRID_COLS + c)) {
+          this.meat = { row: r, col: c, type };
+          return;
+        }
+      }
+    }
+
+    // 全マスが蛇で埋まっている場合のみ肉なし状態
     this.meat = null;
   }
 
@@ -636,7 +647,7 @@ class BullGame {
   _gameOver() {
     this.destroy();
     if (typeof window.handleBullGameOver === 'function') {
-      window.handleBullGameOver({ nickname: this.nickname, score: this.score });
+      window.handleBullGameOver({ nickname: this.nickname, score: this.score, mode: this.mode });
     }
   }
 
