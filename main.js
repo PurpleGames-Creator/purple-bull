@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentGame = null;
   let lastNickname = null;
   let gameoverAnimId = null;
-  let titleAudio = null;
+  let audioContext = null;
 
   // エラー表示
   window.showGameError = (msg) => {
@@ -383,20 +383,43 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const playCharacterSound = () => {
-    // ゲーム中の場合：soundPool から再生
-    if (currentGame && currentGame.soundPool && currentGame.soundPool['poyoyon']) {
-      const audio = currentGame.soundPool['poyoyon'].cloneNode(true);
-      audio.play().catch(err => console.warn('Character sound play failed:', err));
-    } else {
-      // タイトル画面：titleAudio を使用（一度だけ初期化）
-      if (!titleAudio) {
-        titleAudio = new Audio('./poyoyon.mp3');
-        titleAudio.volume = 0.5;
+    // Web Audio API を使ってぽよーん音を生成（毎回新しいオシレーターを作成）
+    if (!audioContext) {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn('AudioContext not supported');
+        return;
       }
-      // 既に再生中の場合は新しい Audio インスタンスを作成
-      const audioToPlay = titleAudio.paused ? titleAudio : titleAudio.cloneNode(true);
-      audioToPlay.play().catch(err => console.warn('Character sound play failed:', err));
     }
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
+
+    const ctx = audioContext;
+    const now = ctx.currentTime;
+    const duration = 0.42;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    // ぽよーん音：上昇する音から下降する音へ
+    // 前半（0.21秒）：600Hz → 900Hz の上昇
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(900, now + duration * 0.5);
+    // 後半（0.21秒）：900Hz → 400Hz の下降
+    osc.frequency.exponentialRampToValueAtTime(400, now + duration);
+
+    // ボリュームのエンベロープ
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
+
+    osc.start(now);
+    osc.stop(now + duration);
   };
 
   const createHomeBull = (x, y) => {
