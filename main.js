@@ -381,10 +381,17 @@ document.addEventListener('DOMContentLoaded', () => {
     animate();
   };
 
+  const playCharacterSound = () => {
+    const audio = new Audio('./poyoyon.mp3');
+    audio.volume = 0.5;
+    audio.play().catch(err => console.warn('Character sound play failed:', err));
+  };
+
   const createHomeBull = (x, y) => {
     if (!homeBullImage) return;
     const bull = new HomeBull(x, y, 25, homeBullImage);
     homeBulls.push(bull);
+    playCharacterSound();
   };
 
   let touchDetected = false;
