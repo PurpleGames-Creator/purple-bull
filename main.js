@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentGame = null;
   let lastNickname = null;
   let gameoverAnimId = null;
+  let titleAudio = null;
 
   // エラー表示
   window.showGameError = (msg) => {
@@ -382,20 +383,19 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const playCharacterSound = () => {
-    // Note: soundPool は currentGame が初期化されて _preloadSounds() が実行された後に利用可能
+    // ゲーム中の場合：soundPool から再生
     if (currentGame && currentGame.soundPool && currentGame.soundPool['poyoyon']) {
-      // cloneNode(true) で毎回新しい Audio 要素を作成（複数回再生に対応）
       const audio = currentGame.soundPool['poyoyon'].cloneNode(true);
       audio.play().catch(err => console.warn('Character sound play failed:', err));
     } else {
-      // fallback: soundPool が未初期化の場合
-      try {
-        const audio = new Audio('./poyoyon.mp3');
-        audio.volume = 0.5;
-        audio.play().catch(err => console.warn('Character sound play failed:', err));
-      } catch (e) {
-        console.warn('Sound not available:', e);
+      // タイトル画面：titleAudio を使用（一度だけ初期化）
+      if (!titleAudio) {
+        titleAudio = new Audio('./poyoyon.mp3');
+        titleAudio.volume = 0.5;
       }
+      // 既に再生中の場合は新しい Audio インスタンスを作成
+      const audioToPlay = titleAudio.paused ? titleAudio : titleAudio.cloneNode(true);
+      audioToPlay.play().catch(err => console.warn('Character sound play failed:', err));
     }
   };
 
