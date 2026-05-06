@@ -17,9 +17,9 @@ class BullGame {
 
     this.cells    = [];   // cells[row][col] = HTMLElement
     this.snake    = [];   // [{row, col}, ...] head は index 0
-    this.dir      = { dr: 0, dc: 1 };
-    this.nextDir  = { dr: 0, dc: 1 };
-    this.moveDirHistory = [{ dr: 0, dc: 1 }];  // 移動方向の履歴（セグメント別のタイムラグ用）
+    this.dir      = { dr: -1, dc: 0 };
+    this.nextDir  = { dr: -1, dc: 0 };
+    this.moveDirHistory = [{ dr: -1, dc: 0 }];  // 移動方向の履歴（セグメント別のタイムラグ用）
     this.meat     = null; // {row, col}
     this.score    = 0;
     this.running  = false;
