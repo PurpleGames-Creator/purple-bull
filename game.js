@@ -577,29 +577,6 @@ class BullGame {
       this.skipPopCount = skipPopIncrease;
       if (this.scoreEl) this.scoreEl.textContent = String(this.score);
 
-      // スコア30未満：速度を上げる（難易度上昇）
-      // スコア30以上：速度を下げる（処理負荷軽減でカクつき防止）
-      if (this.score < 30) {
-        // 従来のロジック：TICK削減で高速化
-        if (this.TICK > 260) {
-          const speedDecrease = (meatType === 'super_special') ? 15 : (meatType === 'special') ? 9 : 3;
-          this.TICK -= speedDecrease;
-          if (this.TICK < 260) {
-            this.TICK = 260; // 下限260msで固定
-          }
-        }
-      } else {
-        // スコア30以上：TICK増加で低速化し処理負荷を軽減
-        const speedIncrease = (meatType === 'super_special') ? 15 : (meatType === 'special') ? 9 : 3;
-        this.TICK += speedIncrease;
-        const maxTICK = 500; // 上限500ms
-        if (this.TICK > maxTICK) {
-          this.TICK = maxTICK;
-        }
-      }
-      clearInterval(this.timerId);
-      this.timerId = setInterval(() => this._tick(), this.TICK);
-
       // レンダリングと肉配置を次フレームに遅延（フレーム処理を大幅削減）
       requestAnimationFrame(() => {
         this._render();
