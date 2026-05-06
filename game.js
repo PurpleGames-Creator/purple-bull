@@ -327,9 +327,9 @@ class BullGame {
     const midRow = Math.floor(this.GRID_ROWS / 2);
     const midCol = Math.floor(this.GRID_COLS / 2);
     this.snake   = [{ row: midRow, col: midCol }];
-    this.dir     = { dr: 0, dc: 1 };
-    this.nextDir = { dr: 0, dc: 1 };
-    this.moveDirHistory = [{ dr: 0, dc: 1 }];
+    this.dir     = { dr: -1, dc: 0 };
+    this.nextDir = { dr: -1, dc: 0 };
+    this.moveDirHistory = [{ dr: -1, dc: 0 }];
     this.score   = 1;
   }
 
