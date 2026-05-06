@@ -514,14 +514,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const trashButton = document.getElementById('trash-button');
+  console.log('Trash button element:', trashButton);
   if (trashButton) {
+    console.log('Setting up trash button listener');
     trashButton.addEventListener('click', () => {
+      console.log('Trash button clicked. homeBulls count:', homeBulls.length);
       playTrashSound();
       animateCharactersFalling();
+      console.log('After animateCharactersFalling:', homeBulls.map(b => ({ isFalling: b.isFalling, y: b.y })));
       setTimeout(() => {
+        console.log('Clearing homeBulls array');
         homeBulls = [];
       }, 100);
     });
+  } else {
+    console.log('Trash button not found!');
   }
 
   const observeScreenChange = () => {
