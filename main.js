@@ -32,26 +32,39 @@ document.addEventListener('DOMContentLoaded', () => {
       this.radius = radius;
       this.bullImage = bullImage;
       this.rotation = Math.random() * Math.PI * 2;
+      this.isFalling = false;
+      this.fallVelocity = 0;
+      this.fallOpacity = 1.0;
     }
 
     update(gravity, groundY, canvasWidth) {
-      this.vy += gravity;
-      this.x += this.vx;
-      this.y += this.vy;
-      this.rotation += (this.vx * 0.02);
+      if (this.isFalling) {
+        this.fallVelocity += gravity * 1.5;
+        this.y += this.fallVelocity;
+        this.fallOpacity -= 0.02;
 
-      if (this.y + this.radius >= groundY) {
-        this.y = groundY - this.radius;
-        this.vy *= -0.75;
-        if (Math.abs(this.vy) < 0.3) this.vy = 0;
-      }
+        if (this.y > groundY + 100 || this.fallOpacity <= 0) {
+          return true;
+        }
+      } else {
+        this.vy += gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.rotation += (this.vx * 0.02);
 
-      if (this.x - this.radius < 0) {
-        this.x = this.radius;
-        this.vx *= -0.7;
-      } else if (this.x + this.radius > canvasWidth) {
-        this.x = canvasWidth - this.radius;
-        this.vx *= -0.7;
+        if (this.y + this.radius >= groundY) {
+          this.y = groundY - this.radius;
+          this.vy *= -0.75;
+          if (Math.abs(this.vy) < 0.3) this.vy = 0;
+        }
+
+        if (this.x - this.radius < 0) {
+          this.x = this.radius;
+          this.vx *= -0.7;
+        } else if (this.x + this.radius > canvasWidth) {
+          this.x = canvasWidth - this.radius;
+          this.vx *= -0.7;
+        }
       }
 
       return this.y > canvasHeight + 50;
@@ -91,6 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     draw(ctx) {
       ctx.save();
+
+      if (this.isFalling) {
+        ctx.globalAlpha = this.fallOpacity;
+      }
+
       ctx.translate(this.x, this.y);
       ctx.rotate(this.rotation);
       ctx.drawImage(this.bullImage, -this.radius, -this.radius, this.radius * 2, this.radius * 2);
@@ -422,6 +440,49 @@ document.addEventListener('DOMContentLoaded', () => {
     osc.stop(now + duration);
   };
 
+  const playTrashSound = () => {
+    if (!audioContext) {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn('AudioContext not supported');
+        return;
+      }
+    }
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
+
+    const ctx = audioContext;
+    const now = ctx.currentTime;
+    const duration = 0.2;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + duration * 0.4);
+    osc.frequency.exponentialRampToValueAtTime(300, now + duration);
+
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + duration);
+
+    osc.start(now);
+    osc.stop(now + duration);
+  };
+
+  const animateCharactersFalling = () => {
+    homeBulls.forEach(bull => {
+      bull.isFalling = true;
+      bull.fallVelocity = 0;
+      bull.fallOpacity = 1.0;
+    });
+  };
+
   const createHomeBull = (x, y) => {
     if (!homeBullImage) return;
     const bull = new HomeBull(x, y, 25, homeBullImage);
@@ -451,6 +512,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const y = e.clientY - rect.top;
     createHomeBull(x, y);
   });
+
+  const trashButton = document.getElementById('trash-button');
+  if (trashButton) {
+    trashButton.addEventListener('click', () => {
+      playTrashSound();
+      animateCharactersFalling();
+      setTimeout(() => {
+        homeBulls = [];
+      }, 100);
+    });
+  }
 
   const observeScreenChange = () => {
     const observer = new MutationObserver(() => {
