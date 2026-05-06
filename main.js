@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const animateCharactersFalling = () => {
     homeBulls.forEach(bull => {
       bull.isFalling = true;
-      bull.fallVelocity = 0;
+      bull.fallVelocity = 5;
       bull.fallOpacity = 1.0;
     });
   };
