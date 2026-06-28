@@ -185,6 +185,27 @@ body {
   box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.7);
 }
 
+.input.invalid {
+  border-color: #ff6b8a;
+  box-shadow: 0 0 0 3px rgba(255, 107, 138, 0.3);
+  animation: nickShake 0.4s;
+}
+
+.nickname-error {
+  min-height: 1.1em;
+  margin-top: 2px;
+  color: #ff6b8a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+@keyframes nickShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
 .button {
   margin-top: 6px;
   padding: 10px 16px;
