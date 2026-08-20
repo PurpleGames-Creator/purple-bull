@@ -35,6 +35,11 @@ html, body {
   position: fixed;
   top: 0; left: 0;
   overscroll-behavior: none;
+  /* iOS は -webkit-user-select: none だけでは長押しの虫眼鏡（選択ルーペ）が出る。
+     -webkit-touch-callout: none まで指定して初めて止まる */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -177,6 +182,10 @@ body {
   color: var(--text);
   font-size: 0.95rem;
   outline: none;
+  /* 入力欄だけは選択・コピー・ペーストできるように戻す */
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .input::placeholder { color: rgba(166, 160, 192, 0.8); }
