@@ -83,6 +83,9 @@ body {
 .home-logo-link {
   position: absolute;
   top: 0; left: 0;
+  /* 見出し(.title)は横幅いっぱいの箱で、アニメーションのせいで上に重なる。
+     重なったままだとアイコンの 2〜3 割しか押せなかった(2026-09-22 実測) */
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -90,10 +93,12 @@ body {
   text-decoration: none;
 }
 
+/* HP へのパプ太郎(2026-09-22 Purple Park の文字ロゴから差し替え。全ゲームで統一) */
 .home-logo-image {
   display: block;
-  width: clamp(56px, 14vw, 78px);
-  height: auto;
+  width: clamp(44px, 11vw, 52px);
+  height: clamp(44px, 11vw, 52px);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
 }
 
 .title {
